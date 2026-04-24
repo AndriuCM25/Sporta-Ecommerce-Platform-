@@ -11,6 +11,7 @@ import Footer from './components/Footer'
 import Cart from './components/Cart'
 import Auth from './components/Auth'
 import Checkout from './pages/Checkout'
+import AdminDashboard from './components/AdminDashboard'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -55,9 +56,21 @@ function App() {
   const getTotalItems = () => cart.reduce((total, item) => total + item.quantity, 0)
   const getTotalPrice = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0)
 
-  const handleLogin = (userData) => { setUser(userData); setShowAuth(false) }
-  const handleLogout = () => { setUser(null); setCart([]) }
-  const handleRegister = (userData) => { setUser(userData); setShowAuth(false) }
+  const handleLogin = (userData) => {
+    setUser(userData)
+    setShowAuth(false)
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    setCart([])
+    setCurrentPage('home')
+  }
+
+  const handleRegister = (userData) => {
+    setUser(userData)
+    setShowAuth(false)
+  }
 
   const handleCheckout = () => {
     if (!user) { setShowCart(false); setShowAuth(true); return }
@@ -76,6 +89,11 @@ function App() {
     setShowCheckout(false)
     setCurrentPage('home')
     alert('¡Pedido completado exitosamente!')
+  }
+
+  // Si el usuario logueado es admin, mostrar solo el panel de administración
+  if (user?.role === 'admin') {
+    return <AdminDashboard user={user} onLogout={handleLogout} />
   }
 
   const renderPage = () => {

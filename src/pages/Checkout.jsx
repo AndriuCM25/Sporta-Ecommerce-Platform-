@@ -350,9 +350,17 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete }) => {
               </div>
               <div style={S.formGroup}>
                 <label style={S.label}><MapPin size={14}/>Distrito *</label>
-                <select name="district" value={customerInfo.district} onChange={handleInputChange} style={{ ...S.select, ...(errors.district ? S.inputErr : {}) }}>
+                <select name="district" value={customerInfo.district} onChange={handleInputChange} style={{ ...S.select, ...(errors.district ? S.inputErr : {}) }} className="checkout-district-select">
                   <option value="">Selecciona tu distrito</option>
-                  {['Lima','Miraflores','San Isidro','Barranco','Surco','La Molina','Jesus Maria','Lince','Magdalena','Pueblo Libre','San Miguel'].map(d => <option key={d} value={d}>{d}</option>)}
+                  {[
+                    'Ancón','Ate','Barranco','Breña','Carabayllo','Chaclacayo','Chorrillos','Cieneguilla','Comas',
+                    'El Agustino','Independencia','Jesús María','La Molina','La Victoria','Lima','Lince','Los Olivos',
+                    'Lurigancho','Lurín','Magdalena del Mar','Miraflores','Pachacámac','Pucusana','Pueblo Libre',
+                    'Puente Piedra','Punta Hermosa','Punta Negra','Rímac','San Bartolo','San Borja','San Isidro',
+                    'San Juan de Lurigancho','San Juan de Miraflores','San Luis','San Martín de Porres','San Miguel',
+                    'Santa Anita','Santa María del Mar','Santa Rosa','Santiago de Surco','Surquillo','Villa El Salvador',
+                    'Villa María del Triunfo'
+                  ].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
                 {errors.district && <span style={S.errMsg}>{errors.district}</span>}
               </div>
@@ -443,6 +451,14 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete }) => {
 
         </div>
       </div>
+      
+      {/* Estilos adicionales para el selector de distrito */}
+      <style>{`
+        .checkout-district-select option {
+          background: #111 !important;
+          color: #fff !important;
+        }
+      `}</style>
     </>
   );
 };
