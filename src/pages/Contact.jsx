@@ -11,7 +11,7 @@ const Contact = () => {
         </svg>
       ),
       label: 'Ubicación',
-      value: 'Lima, Perú',
+      value: 'Av. Javier Prado - Lima',
     },
     {
       icon: (
@@ -21,7 +21,7 @@ const Contact = () => {
         </svg>
       ),
       label: 'Email',
-      value: 'hola@sporta.pe',
+      value: 'adminSporta@depor.pe',
     },
     {
       icon: (
@@ -30,7 +30,7 @@ const Contact = () => {
         </svg>
       ),
       label: 'Teléfono',
-      value: '+51 999 888 777',
+      value: '+51 925 841 052',
     },
     {
       icon: (

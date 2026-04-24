@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const Hero = () => {
   const [currentModel, setCurrentModel] = useState(0)
+  const [showVideoModal, setShowVideoModal] = useState(false)
   const carouselRef = useRef(null)
 
   const models = [
@@ -306,6 +307,87 @@ const Hero = () => {
           to   { opacity: 1; }
         }
 
+        /* VIDEO MODAL */
+        .video-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.92);
+          backdrop-filter: blur(12px);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+          animation: fadeIn 0.3s ease;
+        }
+        .video-modal-content {
+          position: relative;
+          width: 100%;
+          max-width: 1100px;
+          background: #111;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+          animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(40px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .video-modal-header {
+          padding: 1.5rem 2rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: linear-gradient(135deg, rgba(255, 69, 0, 0.05), transparent);
+        }
+        .video-modal-title {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 1.4rem;
+          letter-spacing: 2px;
+          color: #fff;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .video-modal-title svg {
+          color: #FF4500;
+        }
+        .video-modal-close {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.6);
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .video-modal-close:hover {
+          background: rgba(255, 69, 0, 0.15);
+          border-color: rgba(255, 69, 0, 0.3);
+          color: #FF4500;
+          transform: rotate(90deg);
+        }
+        .video-modal-body {
+          position: relative;
+          padding-bottom: 56.25%; /* 16:9 aspect ratio */
+          background: #000;
+        }
+        .video-modal-body video {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
         @media (max-width: 900px) {
           .hero-inner {
             grid-template-columns: 1fr;
@@ -317,6 +399,7 @@ const Hero = () => {
           .hero-cta-group { justify-content: center; flex-wrap: wrap; }
           .hero-tags { justify-content: center; }
           .carousel-track { justify-content: flex-start; }
+          .video-modal-content { max-width: 95%; }
         }
       `}</style>
 
@@ -345,12 +428,12 @@ const Hero = () => {
 
             <div className="hero-cta-group">
               <button className="btn-primary">Ver Colección</button>
-              <button className="btn-secondary">
+              <button className="btn-secondary" onClick={() => setShowVideoModal(true)}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                   <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
                 </svg>
-                Ver Lookbook
+                Ver Spot Publicitario
               </button>
             </div>
 
@@ -391,6 +474,34 @@ const Hero = () => {
           </div>
         </div>
       </section>
+
+      {/* VIDEO MODAL */}
+      {showVideoModal && (
+        <div className="video-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowVideoModal(false)}>
+          <div className="video-modal-content">
+            <div className="video-modal-header">
+              <div className="video-modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
+                </svg>
+                SPOT PUBLICITARIO SPORTA
+              </div>
+              <button className="video-modal-close" onClick={() => setShowVideoModal(false)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="video-modal-body">
+              <video controls autoPlay>
+                <source src="/SportaVideoPublicitario.mp4" type="video/mp4" />
+                Tu navegador no soporta el elemento de video.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

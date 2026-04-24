@@ -205,6 +205,61 @@ const About = () => {
         }
         .ab-val-card p { color: rgba(255,255,255,.35); font-size: .85rem; line-height: 1.6; }
 
+        /* LOCATION */
+        .ab-location {
+          max-width: 1100px; margin: 0 auto;
+          padding: 5rem 2rem;
+        }
+        .ab-location-head { text-align: center; margin-bottom: 3rem; }
+        .ab-location-head h2 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(2rem, 4vw, 3rem); letter-spacing: 2px;
+        }
+        .ab-location-head h2 span { color: #FF4500; }
+        .ab-location-head p { color: rgba(255,255,255,.35); font-size: .9rem; margin-top: .5rem; }
+        .ab-location-content {
+          display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: center;
+        }
+        .ab-location-info {
+          background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+          border-radius: 20px; padding: 2.5rem;
+          position: relative; overflow: hidden;
+        }
+        .ab-location-info::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, #FF4500, transparent);
+        }
+        .ab-location-item {
+          display: flex; align-items: flex-start; gap: 1rem;
+          padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,.06);
+        }
+        .ab-location-item:last-child { border-bottom: none; }
+        .ab-location-icon {
+          width: 40px; height: 40px;
+          background: rgba(255,69,0,.1); border: 1px solid rgba(255,69,0,.2);
+          border-radius: 10px; display: flex; align-items: center; justify-content: center;
+          color: #FF4500; flex-shrink: 0;
+        }
+        .ab-location-label {
+          font-size: .7rem; letter-spacing: 1.5px; text-transform: uppercase;
+          color: rgba(255,255,255,.3); font-weight: 600; margin-bottom: .25rem;
+        }
+        .ab-location-value {
+          color: #fff; font-size: .95rem; line-height: 1.6;
+        }
+        .ab-map-container {
+          background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+          border-radius: 20px; overflow: hidden; position: relative;
+          height: 400px;
+        }
+        .ab-map-container::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, #FF4500, transparent); z-index: 1;
+        }
+        .ab-map-container iframe {
+          width: 100%; height: 100%; border: 0; display: block;
+        }
+
         /* CTA */
         .ab-cta {
           max-width: 600px; margin: 0 auto; padding: 5rem 2rem;
@@ -233,10 +288,13 @@ const About = () => {
           .ab-stats { grid-template-columns: repeat(2,1fr); }
           .ab-story { grid-template-columns: 1fr; gap: 2rem; }
           .ab-values-grid { grid-template-columns: repeat(2,1fr); }
+          .ab-location-content { grid-template-columns: 1fr; }
+          .ab-map-container { height: 350px; }
         }
         @media(max-width:540px) {
           .ab-stats { grid-template-columns: repeat(2,1fr); }
           .ab-values-grid { grid-template-columns: 1fr; }
+          .ab-map-container { height: 300px; }
         }
       `}</style>
 
@@ -310,6 +368,74 @@ const About = () => {
                   <p>{v.desc}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Location */}
+        <div className="ab-location">
+          <div className="ab-location-head">
+            <h2>NOS UBICAMOS <span>AQUÍ</span></h2>
+            <p>Visítanos en nuestra tienda física en Lima</p>
+          </div>
+          <div className="ab-location-content">
+            <div className="ab-location-info">
+              <div className="ab-location-item">
+                <div className="ab-location-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" strokeWidth="2"/>
+                    <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="ab-location-label">Dirección</div>
+                  <div className="ab-location-value">Av. Javier Prado Este 4200<br/>San Borja, Lima - Perú</div>
+                </div>
+              </div>
+              <div className="ab-location-item">
+                <div className="ab-location-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="ab-location-label">Horario</div>
+                  <div className="ab-location-value">Lunes a Domingo<br/>10:00 AM - 9:00 PM</div>
+                </div>
+              </div>
+              <div className="ab-location-item">
+                <div className="ab-location-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="ab-location-label">Teléfono</div>
+                  <div className="ab-location-value">+51 999 888 777</div>
+                </div>
+              </div>
+              <div className="ab-location-item">
+                <div className="ab-location-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2"/>
+                    <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="ab-location-label">Email</div>
+                  <div className="ab-location-value">hola@sporta.pe</div>
+                </div>
+              </div>
+            </div>
+            <div className="ab-map-container">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9279.185604898666!2d-76.98207465029648!3d-12.083582483063067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c7ad866d5fcb%3A0x56ddc453686c288b!2sadidas%20Store!5e0!3m2!1ses!2spe!4v1777042358453!5m2!1ses!2spe" 
+                allowFullScreen="" 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Ubicación de Sporta en Google Maps"
+              />
             </div>
           </div>
         </div>

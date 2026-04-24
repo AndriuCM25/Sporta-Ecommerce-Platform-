@@ -1,5 +1,9 @@
 import { useState } from 'react'
 
+// Email exclusivo del administrador
+const ADMIN_EMAIL = 'adminSporta@depor.pe'
+const ADMIN_PASSWORD = 'admin123'
+
 const Auth = ({ onClose, onLogin, onRegister }) => {
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
@@ -28,10 +32,30 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!validateForm()) return
+
+    // Detectar si es el administrador
+    if (isLogin && formData.email === ADMIN_EMAIL) {
+      if (formData.password !== ADMIN_PASSWORD) {
+        setErrors({ password: 'Contraseña incorrecta' })
+        return
+      }
+      const adminUser = {
+        id: 'admin-001',
+        name: 'Admin Sporta',
+        email: ADMIN_EMAIL,
+        role: 'admin',
+      }
+      onLogin(adminUser)
+      setFormData({ name: '', email: '', password: '', confirmPassword: '' })
+      return
+    }
+
+    // Usuario normal
     const userData = {
       id: Date.now(),
       name: isLogin ? formData.email.split('@')[0] : formData.name,
       email: formData.email,
+      role: 'user',
     }
     isLogin ? onLogin(userData) : onRegister(userData)
     setFormData({ name: '', email: '', password: '', confirmPassword: '' })
@@ -42,6 +66,8 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
     setErrors({})
     setFormData({ name: '', email: '', password: '', confirmPassword: '' })
   }
+
+  const isAdminEmail = formData.email === ADMIN_EMAIL
 
   return (
     <>
@@ -100,6 +126,37 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
           border-color: rgba(255,69,0,0.3);
           color: #FF4500;
           transform: rotate(90deg);
+        }
+        .auth-admin-badge {
+          margin: 1rem 1.75rem 0;
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          background: rgba(255,69,0,0.08);
+          border: 1px solid rgba(255,69,0,0.2);
+          border-radius: 10px;
+          padding: 0.65rem 1rem;
+          animation: fadeIn 0.2s ease;
+        }
+        .auth-admin-badge-icon {
+          width: 28px; height: 28px;
+          background: #FF4500;
+          border-radius: 7px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .auth-admin-badge p {
+          font-size: 0.78rem;
+          color: #FF4500;
+          font-weight: 600;
+          margin: 0;
+          line-height: 1.3;
+        }
+        .auth-admin-badge span {
+          font-size: 0.7rem;
+          color: rgba(255,69,0,0.6);
+          display: block;
+          font-weight: 400;
         }
         .auth-tabs {
           display: flex;
@@ -165,6 +222,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
         .auth-field input.err {
           border-color: rgba(255,60,60,0.5);
         }
+        .auth-field input.admin-input {
+          border-color: rgba(255,69,0,0.35);
+          background: rgba(255,69,0,0.04);
+        }
         .auth-field input::placeholder {
           color: rgba(255,255,255,0.2);
         }
@@ -194,6 +255,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
           background: #e03d00;
           transform: translateY(-2px);
           box-shadow: 0 10px 25px rgba(255,69,0,0.35);
+        }
+        .auth-submit.admin-btn {
+          background: linear-gradient(135deg, #FF4500, #ff6a35);
+          letter-spacing: 1.5px;
         }
         .auth-divider {
           display: flex;
@@ -250,14 +315,33 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
             </button>
           </div>
 
-          <div className="auth-tabs">
-            <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => !isLogin && switchMode()}>
-              Ingresar
-            </button>
-            <button className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => isLogin && switchMode()}>
-              Registrarse
-            </button>
-          </div>
+          {/* Badge de admin cuando detecta el email */}
+          {isAdminEmail && isLogin && (
+            <div className="auth-admin-badge">
+              <div className="auth-admin-badge-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <p>Acceso de Administrador
+                  <span>Panel de control exclusivo</span>
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Tabs solo si no es admin */}
+          {!isAdminEmail && (
+            <div className="auth-tabs">
+              <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => !isLogin && switchMode()}>
+                Ingresar
+              </button>
+              <button className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => isLogin && switchMode()}>
+                Registrarse
+              </button>
+            </div>
+          )}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             {!isLogin && (
@@ -276,7 +360,7 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
               <input
                 type="email" name="email" value={formData.email}
                 onChange={handleChange} placeholder="tu@email.com"
-                className={errors.email ? 'err' : ''}
+                className={`${errors.email ? 'err' : ''} ${isAdminEmail ? 'admin-input' : ''}`}
               />
               {errors.email && <span className="auth-err">{errors.email}</span>}
             </div>
@@ -285,7 +369,7 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
               <input
                 type="password" name="password" value={formData.password}
                 onChange={handleChange} placeholder="Mínimo 6 caracteres"
-                className={errors.password ? 'err' : ''}
+                className={`${errors.password ? 'err' : ''} ${isAdminEmail ? 'admin-input' : ''}`}
               />
               {errors.password && <span className="auth-err">{errors.password}</span>}
             </div>
@@ -300,21 +384,26 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
                 {errors.confirmPassword && <span className="auth-err">{errors.confirmPassword}</span>}
               </div>
             )}
-            <button type="submit" className="auth-submit">
-              {isLogin ? 'Entrar' : 'Crear cuenta'}
+            <button type="submit" className={`auth-submit ${isAdminEmail ? 'admin-btn' : ''}`}>
+              {isAdminEmail ? 'Acceder como Admin' : isLogin ? 'Entrar' : 'Crear cuenta'}
             </button>
           </form>
 
-          <div className="auth-divider"><span>o continúa con</span></div>
-          <button className="auth-google">
-            <svg width="17" height="17" viewBox="0 0 24 24">
-              <path d="M21.8 10.04H21V10H12v4h5.65C16.83 16.33 14.61 18 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-.67-.07-1.33-.2-1.96z" fill="#4285F4"/>
-              <path d="M3.15 7.35L6.44 9.75C7.33 7.55 9.48 6 12 6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 8.16 2 4.83 4.17 3.15 7.35z" fill="#EA4335"/>
-              <path d="M12 22c2.58 0 4.93-1 6.7-2.6l-3.09-2.62A5.95 5.95 0 0112 18c-2.6 0-4.81-1.66-5.64-3.97L3.1 16.54C4.75 19.78 8.11 22 12 22z" fill="#34A853"/>
-              <path d="M21.8 10.04H21V10H12v4h5.65a6.01 6.01 0 01-2.04 2.79l3.1 2.62C18.49 19.6 22 17 22 12c0-.67-.07-1.33-.2-1.96z" fill="#FBBC05"/>
-            </svg>
-            Continuar con Google
-          </button>
+          {/* Google solo para usuarios normales */}
+          {!isAdminEmail && (
+            <>
+              <div className="auth-divider"><span>o continúa con</span></div>
+              <button className="auth-google">
+                <svg width="17" height="17" viewBox="0 0 24 24">
+                  <path d="M21.8 10.04H21V10H12v4h5.65C16.83 16.33 14.61 18 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-.67-.07-1.33-.2-1.96z" fill="#4285F4"/>
+                  <path d="M3.15 7.35L6.44 9.75C7.33 7.55 9.48 6 12 6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 8.16 2 4.83 4.17 3.15 7.35z" fill="#EA4335"/>
+                  <path d="M12 22c2.58 0 4.93-1 6.7-2.6l-3.09-2.62A5.95 5.95 0 0112 18c-2.6 0-4.81-1.66-5.64-3.97L3.1 16.54C4.75 19.78 8.11 22 12 22z" fill="#34A853"/>
+                  <path d="M21.8 10.04H21V10H12v4h5.65a6.01 6.01 0 01-2.04 2.79l3.1 2.62C18.49 19.6 22 17 22 12c0-.67-.07-1.33-.2-1.96z" fill="#FBBC05"/>
+                </svg>
+                Continuar con Google
+              </button>
+            </>
+          )}
         </div>
       </div>
     </>
