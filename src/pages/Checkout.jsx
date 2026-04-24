@@ -1,27 +1,8 @@
-import { useState, useEffect } from 'react';
-import '../styles/Checkout.css';
-
-// Importar iconos de Lucide
-import { 
-  CheckCircle, 
-  ArrowLeft, 
-  CreditCard, 
-  Smartphone, 
-  Landmark, 
-  Banknote,
-  ShoppingCart,
-  Shield,
-  Mail,
-  FileText,
-  User,
-  Phone,
-  MapPin,
-  Clock,
-  Truck,
-  Download,
-  Calendar,
-  CreditCard as CardIcon,
-  UserCheck
+import { useState } from 'react';
+import {
+  CheckCircle, ArrowLeft, CreditCard, Smartphone, Landmark, Banknote,
+  ShoppingCart, Shield, Mail, FileText, User, Phone, MapPin, Clock,
+  Truck, Download, Calendar, CreditCard as CardIcon, UserCheck
 } from 'lucide-react';
 
 const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete }) => {
@@ -30,837 +11,439 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
-  
-  // Estado para Formspree - con manejo de errores
-  const [formState, setFormState] = useState({
-    submitting: false,
-    succeeded: false,
-    error: null
-  });
+  const [formState, setFormState] = useState({ submitting: false, succeeded: false, error: null });
 
   const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    district: '',
-    reference: '',
-    deliveryNotes: ''
+    name: '', email: '', phone: '', address: '', district: '', reference: '', deliveryNotes: ''
   });
+  const [cardInfo, setCardInfo] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardName: '' });
 
-  const [cardInfo, setCardInfo] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardName: ''
-  });
-
-  // Asegurarnos de que cart siempre sea un array
   const cartItems = cart || [];
-
-  // Tu ID de Formspree - REEMPLAZA ESTO con tu ID real
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/movkyjko";
+  const FORMSPREE_ENDPOINT = 'https://formspree.io/f/movkyjko';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCustomerInfo({
-      ...customerInfo,
-      [name]: value
-    });
-    
-    // Limpiar error cuando el usuario empiece a escribir
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    setCustomerInfo({ ...customerInfo, [name]: value });
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
     if (formError) setFormError('');
   };
 
   const handleCardInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Formatear número de tarjeta
     if (name === 'cardNumber') {
-      const formattedValue = value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim();
-      setCardInfo(prev => ({ ...prev, [name]: formattedValue }));
+      setCardInfo(prev => ({ ...prev, [name]: value.replace(/\s/g, '').replace(/(\d{4})/g, '$1 ').trim() }));
       return;
     }
-    
-    // Formatear fecha de expiración
     if (name === 'expiryDate') {
-      const formattedValue = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2');
-      setCardInfo(prev => ({ ...prev, [name]: formattedValue }));
+      setCardInfo(prev => ({ ...prev, [name]: value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2') }));
       return;
     }
-    
     setCardInfo(prev => ({ ...prev, [name]: value }));
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    
-    if (!customerInfo.name.trim()) newErrors.name = 'El nombre es requerido';
-    if (!customerInfo.email.trim()) newErrors.email = 'El email es requerido';
-    else if (!/\S+@\S+\.\S+/.test(customerInfo.email)) newErrors.email = 'Email inválido';
-    if (!customerInfo.phone.trim()) newErrors.phone = 'El teléfono es requerido';
-    if (!customerInfo.address.trim()) newErrors.address = 'La dirección es requerida';
-    if (!customerInfo.district) newErrors.district = 'Selecciona un distrito';
-    
-    // Validar información de tarjeta si se selecciona pago con tarjeta
+    const e = {};
+    if (!customerInfo.name.trim()) e.name = 'El nombre es requerido';
+    if (!customerInfo.email.trim()) e.email = 'El email es requerido';
+    else if (!/\S+@\S+\.\S+/.test(customerInfo.email)) e.email = 'Email inválido';
+    if (!customerInfo.phone.trim()) e.phone = 'El teléfono es requerido';
+    if (!customerInfo.address.trim()) e.address = 'La dirección es requerida';
+    if (!customerInfo.district) e.district = 'Selecciona un distrito';
     if (selectedPayment === 'credit') {
-      if (!cardInfo.cardNumber.replace(/\s/g, '')) newErrors.cardNumber = 'Número de tarjeta requerido';
-      else if (cardInfo.cardNumber.replace(/\s/g, '').length !== 16) newErrors.cardNumber = 'Número de tarjeta inválido';
-      if (!cardInfo.expiryDate) newErrors.expiryDate = 'Fecha de expiración requerida';
-      if (!cardInfo.cvv) newErrors.cvv = 'CVV requerido';
-      else if (cardInfo.cvv.length !== 3) newErrors.cvv = 'CVV inválido';
-      if (!cardInfo.cardName.trim()) newErrors.cardName = 'Nombre en la tarjeta requerido';
+      if (!cardInfo.cardNumber.replace(/\s/g, '')) e.cardNumber = 'Número de tarjeta requerido';
+      else if (cardInfo.cardNumber.replace(/\s/g, '').length !== 16) e.cardNumber = 'Número de tarjeta inválido';
+      if (!cardInfo.expiryDate) e.expiryDate = 'Fecha de expiración requerida';
+      if (!cardInfo.cvv) e.cvv = 'CVV requerido';
+      else if (cardInfo.cvv.length !== 3) e.cvv = 'CVV inválido';
+      if (!cardInfo.cardName.trim()) e.cardName = 'Nombre en la tarjeta requerido';
     }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  // Función mejorada para enviar a Formspree con manejo de errores
   const submitToFormspree = async (formData) => {
-    try {
-      setFormState({ submitting: true, succeeded: false, error: null });
-      
-      const response = await fetch(FORMSPREE_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setFormState({ submitting: false, succeeded: true, error: null });
-      return data;
-      
-    } catch (error) {
-      console.error('Error enviando a Formspree:', error);
-      setFormState({ 
-        submitting: false, 
-        succeeded: false, 
-        error: error.message 
-      });
-      throw error;
-    }
+    setFormState({ submitting: true, succeeded: false, error: null });
+    const response = await fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    if (!response.ok) throw new Error(`Error ${response.status}`);
+    const data = await response.json();
+    setFormState({ submitting: false, succeeded: true, error: null });
+    return data;
   };
 
-  // Generar comprobante automático
-  const generateReceipt = () => {
-    const receiptNumber = `COMP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    const receiptDate = new Date().toLocaleDateString('es-PE');
-    
-    return {
-      receiptNumber,
-      receiptAmount: getTotalPrice ? getTotalPrice().toFixed(2) : '0.00',
-      receiptDate,
-      bankName: selectedPayment === 'yape' ? 'Yape' : 
-                selectedPayment === 'transfer' ? 'Transferencia Bancaria' : 
-                selectedPayment === 'credit' ? 'Tarjeta de Crédito/Débito' : 'Efectivo'
-    };
-  };
+  const generateReceipt = () => ({
+    receiptNumber: `COMP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+    receiptDate: new Date().toLocaleDateString('es-PE'),
+    receiptAmount: getTotalPrice ? getTotalPrice().toFixed(2) : '0.00',
+    bankName: selectedPayment === 'yape' ? 'Yape' :
+              selectedPayment === 'transfer' ? 'Transferencia Bancaria' :
+              selectedPayment === 'credit' ? 'Tarjeta de Crédito/Débito' : 'Efectivo',
+  });
 
   const downloadReceipt = () => {
-    const receiptInfo = generateReceipt();
-    const receiptText = `
-COMPROBANTE DE PAGO - TIENDA ADIDAS
-=====================================
-Número: ${receiptInfo.receiptNumber}
-Fecha: ${receiptInfo.receiptDate}
-Método de Pago: ${receiptInfo.bankName}
-Monto Total: S/ ${receiptInfo.receiptAmount}
-
-INFORMACIÓN DEL CLIENTE
-=======================
-Nombre: ${customerInfo.name}
-Email: ${customerInfo.email}
-Teléfono: ${customerInfo.phone}
-Dirección: ${customerInfo.address}
-Distrito: ${customerInfo.district}
-${customerInfo.reference ? `Referencia: ${customerInfo.reference}` : ''}
-${customerInfo.deliveryNotes ? `Indicaciones: ${customerInfo.deliveryNotes}` : ''}
-
-DETALLE DEL PEDIDO
-==================
-${cartItems.map(item => 
-  `${item.name} x${item.quantity} - S/ ${(item.price * item.quantity).toFixed(2)}`
-).join('\n')}
-
-TOTAL: S/ ${receiptInfo.receiptAmount}
-
-¡Gracias por tu compra!
-Tu pedido será procesado y enviado en 2-3 días hábiles.
-    `.trim();
-    
-    const blob = new Blob([receiptText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    const r = generateReceipt();
+    const text = `COMPROBANTE DE PAGO - SPORTA\n=====================================\nNúmero: ${r.receiptNumber}\nFecha: ${r.receiptDate}\nMétodo: ${r.bankName}\nTotal: S/ ${r.receiptAmount}\n\nCliente: ${customerInfo.name}\nEmail: ${customerInfo.email}\nTeléfono: ${customerInfo.phone}\nDirección: ${customerInfo.address}, ${customerInfo.district}\n\nPEDIDO:\n${cartItems.map(i => `${i.name} x${i.quantity} - S/ ${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\nTOTAL: S/ ${r.receiptAmount}\n\n¡Gracias por tu compra!`.trim();
+    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `comprobante-${receiptInfo.receiptNumber}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = `comprobante-${r.receiptNumber}.txt`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
   const handlePayment = async (e) => {
     if (e) e.preventDefault();
-    
-    if (!selectedPayment) {
-      setFormError('Por favor selecciona un método de pago');
-      return;
-    }
-    
-    if (!validateForm()) {
-      setFormError('Por favor corrige los errores en el formulario');
-      return;
-    }
-
-    setIsProcessing(true);
-    setFormError('');
-
+    if (!selectedPayment) { setFormError('Por favor selecciona un método de pago'); return; }
+    if (!validateForm()) { setFormError('Por favor corrige los errores en el formulario'); return; }
+    setIsProcessing(true); setFormError('');
     try {
-      // Generar comprobante automático
-      const receiptInfo = generateReceipt();
-      
-      // Crear datos para el formulario
+      const r = generateReceipt();
       const formData = {
-        _subject: `Nuevo Pedido - ${receiptInfo.receiptNumber}`,
-        _replyto: customerInfo.email,
-        customerName: customerInfo.name,
-        customerEmail: customerInfo.email,
-        customerPhone: customerInfo.phone,
-        customerAddress: customerInfo.address,
-        customerDistrict: customerInfo.district,
-        customerReference: customerInfo.reference,
-        deliveryNotes: customerInfo.deliveryNotes,
-        paymentMethod: selectedPayment,
+        _subject: `Nuevo Pedido - ${r.receiptNumber}`, _replyto: customerInfo.email,
+        ...customerInfo, paymentMethod: selectedPayment,
         totalAmount: getTotalPrice ? getTotalPrice().toFixed(2) : '0.00',
-        orderItems: JSON.stringify(cartItems.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-          total: (item.price * item.quantity).toFixed(2)
-        }))),
-        receiptNumber: receiptInfo.receiptNumber,
-        receiptAmount: receiptInfo.receiptAmount,
-        receiptDate: receiptInfo.receiptDate,
-        bankName: receiptInfo.bankName,
-        orderDate: new Date().toLocaleString('es-PE')
+        orderItems: JSON.stringify(cartItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price, total: (i.price * i.quantity).toFixed(2) }))),
+        ...r, orderDate: new Date().toLocaleString('es-PE'),
       };
-
-      console.log('Enviando datos del pedido:', formData);
-
-      // Intentar enviar a Formspree (pero continuar aunque falle)
-      try {
-        await submitToFormspree(formData);
-        console.log('Formulario enviado exitosamente a Formspree');
-      } catch (formspreeError) {
-        console.warn('Formspree no disponible, pero continuando con el pedido...');
-        // Continuamos aunque Formspree falle
-      }
-      
-      // Simular procesamiento del pago
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      try { await submitToFormspree(formData); } catch { /* continuar aunque falle */ }
+      await new Promise(res => setTimeout(res, 2000));
       setOrderCompleted(true);
-      if (onOrderComplete) {
-        onOrderComplete();
-      }
-      
-    } catch (error) {
-      console.error('Error procesando el pago:', error);
+      if (onOrderComplete) onOrderComplete();
+    } catch {
       setFormError('Hubo un error procesando tu pago. Por favor intenta nuevamente.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Renderizar detalles específicos del método de pago
-  const renderPaymentDetails = () => {
-    switch (selectedPayment) {
-      case 'credit':
-        return (
-          <div className="payment-details">
-            <div className="payment-details-header">
-              <CardIcon size={24} />
-              <h4>Información de Tarjeta</h4>
-            </div>
-            <div className="card-form">
-              <div className="form-group full-width">
-                <label htmlFor="cardNumber">
-                  <CreditCard size={16} />
-                  Número de Tarjeta
-                </label>
-                <input
-                  type="text"
-                  id="cardNumber"
-                  name="cardNumber"
-                  value={cardInfo.cardNumber}
-                  onChange={handleCardInputChange}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength="19"
-                />
-                {errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
-              </div>
-              
-              <div className="card-row">
-                <div className="form-group">
-                  <label htmlFor="expiryDate">
-                    <Calendar size={16} />
-                    Fecha de Expiración
-                  </label>
-                  <input
-                    type="text"
-                    id="expiryDate"
-                    name="expiryDate"
-                    value={cardInfo.expiryDate}
-                    onChange={handleCardInputChange}
-                    placeholder="MM/AA"
-                    maxLength="5"
-                  />
-                  {errors.expiryDate && <span className="error-message">{errors.expiryDate}</span>}
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="cvv">
-                    <Shield size={16} />
-                    CVV
-                  </label>
-                  <input
-                    type="text"
-                    id="cvv"
-                    name="cvv"
-                    value={cardInfo.cvv}
-                    onChange={handleCardInputChange}
-                    placeholder="123"
-                    maxLength="3"
-                  />
-                  {errors.cvv && <span className="error-message">{errors.cvv}</span>}
-                </div>
-              </div>
-              
-              <div className="form-group full-width">
-                <label htmlFor="cardName">
-                  <UserCheck size={16} />
-                  Nombre en la Tarjeta
-                </label>
-                <input
-                  type="text"
-                  id="cardName"
-                  name="cardName"
-                  value={cardInfo.cardName}
-                  onChange={handleCardInputChange}
-                  placeholder="Como aparece en la tarjeta"
-                />
-                {errors.cardName && <span className="error-message">{errors.cardName}</span>}
-              </div>
-            </div>
-          </div>
-        );
-      
-      case 'yape':
-        return (
-          <div className="payment-details">
-            <div className="payment-details-header">
-              <Smartphone size={24} />
-              <h4>Pago con Yape/Plin</h4>
-            </div>
-            <div className="digital-wallet">
-              <div className="digital-wallet-info">
-                <div className="digital-wallet-item">
-                  <strong>Número Yape:</strong>
-                  <span>+51 999 888 777</span>
-                </div>
-                <div className="digital-wallet-item">
-                  <strong>Número Plin:</strong>
-                  <span>+51 999 888 777</span>
-                </div>
-                <div className="digital-wallet-item">
-                  <strong>Nombre:</strong>
-                  <span>TIENDA ADIDAS OFFICIAL</span>
-                </div>
-              </div>
-              <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                Después de realizar el pago, se generará automáticamente tu comprobante
-              </p>
-            </div>
-          </div>
-        );
-      
-      case 'transfer':
-        return (
-          <div className="payment-details">
-            <div className="payment-details-header">
-              <Landmark size={24} />
-              <h4>Transferencia Bancaria</h4>
-            </div>
-            <div className="bank-info">
-              <p>Realiza la transferencia a cualquiera de nuestras cuentas:</p>
-              <div className="bank-details">
-                <div className="bank-detail-item">
-                  <span className="bank-detail-label">BCP - Soles</span>
-                  <span className="bank-detail-value">191-23456789-0-45</span>
-                  <span className="bank-detail-label">TIENDA ADIDAS S.A.C.</span>
-                </div>
-                <div className="bank-detail-item">
-                  <span className="bank-detail-label">Interbank - Soles</span>
-                  <span className="bank-detail-value">898-3100001234</span>
-                  <span className="bank-detail-label">TIENDA ADIDAS S.A.C.</span>
-                </div>
-                <div className="bank-detail-item">
-                  <span className="bank-detail-label">BBVA - Soles</span>
-                  <span className="bank-detail-value">0011-0234-0200057891</span>
-                  <span className="bank-detail-label">TIENDA ADIDAS S.A.C.</span>
-                </div>
-              </div>
-              <p style={{ marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                Envíanos el comprobante de transferencia para procesar tu pedido
-              </p>
-            </div>
-          </div>
-        );
-      
-      case 'cash':
-        return (
-          <div className="payment-details">
-            <div className="payment-details-header">
-              <Banknote size={24} />
-              <h4>Pago Contra Entrega</h4>
-            </div>
-            <div className="cash-payment">
-              <div className="cash-info">
-                <p>Paga en efectivo cuando recibas tu pedido</p>
-                <div className="cash-features">
-                  <div className="cash-feature">
-                    <strong>💵 Efectivo</strong>
-                    <span>Aceptamos soles exactos</span>
-                  </div>
-                  <div className="cash-feature">
-                    <strong>📦 Al recibir</strong>
-                    <span>Revisa tu pedido antes de pagar</span>
-                  </div>
-                  <div className="cash-feature">
-                    <strong>🚚 Delivery</strong>
-                    <span>Entrega en 2-3 días hábiles</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
+  // ─── STYLES ───────────────────────────────────────────────
+  const S = {
+    root:        { background:'#080808', minHeight:'100vh', fontFamily:"'DM Sans',sans-serif", color:'#fff', padding:'2rem' },
+    header:      { maxWidth:1200, margin:'0 auto 2.5rem', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'1rem', paddingTop:'1rem' },
+    h1:          { fontFamily:"'Bebas Neue',sans-serif", fontSize:'clamp(2rem,5vw,3.2rem)', letterSpacing:2, margin:0 },
+    backBtn:     { display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'rgba(255,255,255,.6)', fontFamily:"'DM Sans',sans-serif", fontSize:'.85rem', padding:'.6rem 1.2rem', borderRadius:10, cursor:'pointer' },
+    errBanner:   { maxWidth:1200, margin:'0 auto 1.5rem', background:'rgba(255,60,60,.1)', border:'1px solid rgba(255,60,60,.3)', borderRadius:10, padding:'.85rem 1.25rem', color:'#ff6b6b', fontSize:'.875rem' },
+    warnBanner:  { maxWidth:1200, margin:'0 auto 1.5rem', background:'rgba(255,165,0,.1)', border:'1px solid rgba(255,165,0,.25)', borderRadius:10, padding:'.85rem 1.25rem', color:'#ffb347', fontSize:'.875rem' },
+    grid:        { maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:'1.3fr 1fr', gap:'1.75rem' },
+    card:        { background:'#111', border:'1px solid rgba(255,255,255,.08)', borderRadius:20, padding:'2rem', position:'relative', overflow:'hidden' },
+    cardAccent:  { position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,#FF4500,transparent)' },
+    secHead:     { display:'flex', alignItems:'center', gap:10, marginBottom:'1.5rem', color:'rgba(255,255,255,.5)' },
+    secTitle:    { fontFamily:"'Bebas Neue',sans-serif", fontSize:'1.1rem', letterSpacing:2, color:'#fff', margin:0 },
+    formRow:     { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginBottom:'1rem' },
+    formGroup:   { display:'flex', flexDirection:'column', gap:6, marginBottom:'1rem' },
+    label:       { fontSize:'.72rem', fontWeight:600, letterSpacing:.5, textTransform:'uppercase', color:'rgba(255,255,255,.35)', display:'flex', alignItems:'center', gap:5 },
+    input:       { background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:10, color:'#fff', fontFamily:"'DM Sans',sans-serif", fontSize:'.9rem', padding:'.72rem 1rem', outline:'none', transition:'border-color .2s' },
+    inputErr:    { border:'1px solid rgba(255,60,60,.5)' },
+    select:      { background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:10, color:'#fff', fontFamily:"'DM Sans',sans-serif", fontSize:'.9rem', padding:'.72rem 1rem', outline:'none', appearance:'none' },
+    errMsg:      { color:'#ff6b6b', fontSize:'.72rem', marginTop:2 },
+    delivInfo:   { display:'flex', gap:'1.5rem', marginTop:'1.25rem', padding:'1rem', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)', borderRadius:12 },
+    delivItem:   { display:'flex', alignItems:'center', gap:8, color:'rgba(255,255,255,.4)', fontSize:'.82rem' },
+    // order summary
+    orderItems:  { display:'flex', flexDirection:'column', gap:'.75rem', marginBottom:'1rem' },
+    orderItem:   { display:'flex', alignItems:'center', gap:12, padding:'.85rem', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)', borderRadius:12 },
+    orderImg:    { width:52, height:52, borderRadius:8, objectFit:'cover', background:'rgba(255,255,255,.05)' },
+    orderName:   { fontWeight:600, fontSize:'.88rem', marginBottom:2 },
+    orderMeta:   { color:'rgba(255,255,255,.35)', fontSize:'.78rem' },
+    orderPrice:  { marginLeft:'auto', color:'#FF4500', fontFamily:"'Bebas Neue',sans-serif", fontSize:'1.1rem', letterSpacing:1 },
+    totalRow:    { display:'flex', justifyContent:'space-between', alignItems:'center', paddingTop:'1rem', borderTop:'1px solid rgba(255,255,255,.08)' },
+    totalLabel:  { fontFamily:"'Bebas Neue',sans-serif", fontSize:'1.1rem', letterSpacing:2, color:'rgba(255,255,255,.5)' },
+    totalVal:    { fontFamily:"'Bebas Neue',sans-serif", fontSize:'1.6rem', letterSpacing:1, color:'#FF4500' },
+    emptyCart:   { textAlign:'center', padding:'2rem', color:'rgba(255,255,255,.25)' },
+    // payment
+    payMethods:  { display:'flex', flexDirection:'column', gap:'.75rem', marginBottom:'1.5rem' },
+    payOption:   (sel) => ({ display:'flex', alignItems:'center', gap:14, padding:'1rem 1.25rem', background: sel ? 'rgba(255,69,0,.08)' : 'rgba(255,255,255,.03)', border: sel ? '1px solid rgba(255,69,0,.4)' : '1px solid rgba(255,255,255,.07)', borderRadius:12, cursor:'pointer', transition:'all .2s' }),
+    payIcon:     { color:'#FF4500' },
+    payTitle:    { fontWeight:600, fontSize:'.9rem', margin:0 },
+    payDesc:     { color:'rgba(255,255,255,.35)', fontSize:'.78rem', margin:0 },
+    radioCircle: (sel) => ({ marginLeft:'auto', width:18, height:18, borderRadius:'50%', border: sel ? '2px solid #FF4500' : '2px solid rgba(255,255,255,.2)', display:'flex', alignItems:'center', justifyContent:'center' }),
+    radioDot:    { width:8, height:8, borderRadius:'50%', background:'#FF4500' },
+    payBtn:      (dis) => ({ width:'100%', background: dis ? '#2a2a2a' : '#FF4500', color: dis ? 'rgba(255,255,255,.3)' : '#fff', border:'none', padding:'1rem', borderRadius:12, fontFamily:"'DM Sans',sans-serif", fontSize:'.9rem', fontWeight:700, letterSpacing:'.75px', textTransform:'uppercase', cursor: dis ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:'1.5rem', transition:'all .2s' }),
+    // payment details card
+    detCard:     { background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:14, padding:'1.5rem', marginBottom:'1rem' },
+    detHead:     { display:'flex', alignItems:'center', gap:10, marginBottom:'1.25rem', color:'rgba(255,255,255,.7)' },
+    detTitle:    { fontFamily:"'Bebas Neue',sans-serif", fontSize:'1rem', letterSpacing:2, margin:0 },
+    walletItem:  { display:'flex', justifyContent:'space-between', padding:'.6rem 0', borderBottom:'1px solid rgba(255,255,255,.06)', fontSize:'.88rem' },
+    bankItem:    { padding:'.75rem', background:'rgba(255,255,255,.03)', borderRadius:10, marginBottom:'.5rem' },
+    bankLabel:   { fontSize:'.7rem', color:'rgba(255,255,255,.35)', letterSpacing:1, textTransform:'uppercase', marginBottom:2 },
+    bankVal:     { fontFamily:'monospace', fontSize:'.9rem', color:'#fff' },
+    cashFeats:   { display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'.75rem', marginTop:'1rem' },
+    cashFeat:    { textAlign:'center', padding:'.85rem', background:'rgba(255,255,255,.03)', borderRadius:10 },
+    cashFeatTit: { display:'block', fontSize:'.78rem', fontWeight:600, marginBottom:4 },
+    cashFeatSub: { display:'block', fontSize:'.72rem', color:'rgba(255,255,255,.35)' },
+    // success
+    successWrap: { maxWidth:600, margin:'4rem auto', padding:'0 2rem', textAlign:'center' },
+    successBox:  { background:'#111', border:'1px solid rgba(255,255,255,.08)', borderRadius:24, padding:'3rem 2.5rem', position:'relative', overflow:'hidden' },
+    successIcon: { color:'#4ade80', margin:'0 auto 1.5rem' },
+    successH2:   { fontFamily:"'Bebas Neue',sans-serif", fontSize:'2.2rem', letterSpacing:2, marginBottom:'1.5rem' },
+    receiptBox:  { background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:14, padding:'1.25rem', marginBottom:'1.5rem', textAlign:'left' },
+    receiptRow:  { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'.5rem 0', borderBottom:'1px solid rgba(255,255,255,.06)', fontSize:'.875rem', color:'rgba(255,255,255,.5)' },
+    detailsList: { display:'flex', flexDirection:'column', gap:'.6rem', marginBottom:'1.5rem', textAlign:'left' },
+    detailItem:  { display:'flex', alignItems:'center', gap:10, fontSize:'.875rem', color:'rgba(255,255,255,.5)' },
+    successMsg:  { color:'rgba(255,255,255,.4)', fontSize:'.875rem', lineHeight:1.7, marginBottom:'2rem' },
+    successActs: { display:'flex', gap:'1rem', justifyContent:'center', flexWrap:'wrap' },
+    dlBtn:       { display:'flex', alignItems:'center', gap:8, background:'rgba(74,222,128,.1)', border:'1px solid rgba(74,222,128,.25)', color:'#4ade80', fontFamily:"'DM Sans',sans-serif", fontSize:'.85rem', fontWeight:700, padding:'.75rem 1.5rem', borderRadius:10, cursor:'pointer' },
+    contBtn:     { display:'flex', alignItems:'center', gap:8, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'rgba(255,255,255,.6)', fontFamily:"'DM Sans',sans-serif", fontSize:'.85rem', fontWeight:600, padding:'.75rem 1.5rem', borderRadius:10, cursor:'pointer' },
+    spinner:     { width:16, height:16, border:'2px solid rgba(255,255,255,.3)', borderTop:'2px solid #fff', borderRadius:'50%', animation:'spin .7s linear infinite' },
   };
 
+  // ─── SUCCESS SCREEN ────────────────────────────────────────
   if (orderCompleted || formState.succeeded) {
-    const receiptInfo = generateReceipt();
-    
+    const r = generateReceipt();
     return (
-      <div className="checkout-container">
-        <div className="order-success">
-          <div className="success-icon">
-            <CheckCircle size={64} />
-          </div>
-          <h2>¡Pedido Confirmado!</h2>
-          
-          <div className="receipt-summary">
-            <div className="receipt-header">
-              <FileText size={24} />
-              <h3>Comprobante de Pago Generado</h3>
-            </div>
-            <div className="receipt-details">
-              <div className="receipt-item">
-                <span>Número de Comprobante:</span>
-                <strong>{receiptInfo.receiptNumber}</strong>
-              </div>
-              <div className="receipt-item">
-                <span>Fecha:</span>
-                <span>{receiptInfo.receiptDate}</span>
-              </div>
-              <div className="receipt-item">
-                <span>Método de Pago:</span>
-                <span>{receiptInfo.bankName}</span>
-              </div>
-              <div className="receipt-item">
-                <span>Monto Total:</span>
-                <strong>S/ {receiptInfo.receiptAmount}</strong>
-              </div>
-            </div>
-          </div>
+      <>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div style={S.root}>
+          <div style={S.successWrap}>
+            <div style={S.successBox}>
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,#4ade80,transparent)' }}/>
+              <div style={S.successIcon}><CheckCircle size={64}/></div>
+              <h2 style={S.successH2}>¡PEDIDO CONFIRMADO!</h2>
 
-          <div className="success-details">
-            <div className="success-item">
-              <User size={20} />
-              <span><strong>Cliente:</strong> {customerInfo.name}</span>
+              <div style={S.receiptBox}>
+                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:'1rem', color:'rgba(255,255,255,.6)' }}>
+                  <FileText size={18}/><span style={{ fontFamily:"'Bebas Neue',sans-serif", letterSpacing:2, fontSize:'.95rem' }}>COMPROBANTE GENERADO</span>
+                </div>
+                {[['Número', r.receiptNumber],['Fecha', r.receiptDate],['Método', r.bankName],['Total', `S/ ${r.receiptAmount}`]].map(([k,v]) => (
+                  <div key={k} style={S.receiptRow}><span>{k}</span><strong style={{ color:'#fff' }}>{v}</strong></div>
+                ))}
+              </div>
+
+              <div style={S.detailsList}>
+                {[
+                  [<User size={16}/>, customerInfo.name, 'Cliente'],
+                  [<Mail size={16}/>, customerInfo.email, 'Email'],
+                  [<Phone size={16}/>, customerInfo.phone, 'Teléfono'],
+                  [<MapPin size={16}/>, `${customerInfo.address}, ${customerInfo.district}`, 'Dirección'],
+                  [<Truck size={16}/>, '2-3 días hábiles', 'Envío'],
+                ].map(([icon, val, key]) => (
+                  <div key={key} style={S.detailItem}>{icon}<span>{val}</span></div>
+                ))}
+              </div>
+
+              <p style={S.successMsg}>Tu pedido ha sido procesado. Descarga tu comprobante a continuación.</p>
+
+              <div style={S.successActs}>
+                <button style={S.dlBtn} onClick={downloadReceipt}><Download size={16}/>Descargar comprobante</button>
+                <button style={S.contBtn} onClick={onReturnToCart}><ShoppingCart size={16}/>Volver a la tienda</button>
+              </div>
             </div>
-            <div className="success-item">
-              <Mail size={20} />
-              <span><strong>Email:</strong> {customerInfo.email}</span>
-            </div>
-            <div className="success-item">
-              <Phone size={20} />
-              <span><strong>Teléfono:</strong> {customerInfo.phone}</span>
-            </div>
-            <div className="success-item">
-              <MapPin size={20} />
-              <span><strong>Dirección:</strong> {customerInfo.address}, {customerInfo.district}</span>
-            </div>
-            <div className="success-item">
-              <Truck size={20} />
-              <span><strong>Envío:</strong> 2-3 días hábiles</span>
-            </div>
-          </div>
-          
-          <p className="success-message">
-            {formState.succeeded 
-              ? `Hemos enviado tu comprobante de pago a ${customerInfo.email}. Tu pedido será procesado y enviado en los próximos días.`
-              : `Tu pedido ha sido procesado exitosamente. Descarga tu comprobante a continuación.`
-            }
-          </p>
-          
-          <div className="success-actions">
-            <button className="download-receipt" onClick={downloadReceipt}>
-              <Download size={20} />
-              Descargar Comprobante
-            </button>
-            <button className="continue-shopping" onClick={onReturnToCart}>
-              <ShoppingCart size={20} />
-              Volver a la Tienda
-            </button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
-  return (
-    <div className="checkout-container">
-      <div className="checkout-header">
-        <h1>Finalizar Compra</h1>
-        <button className="back-button" onClick={onReturnToCart}>
-          <ArrowLeft size={16} />
-          Volver al Carrito
-        </button>
+  // ─── PAYMENT DETAILS ──────────────────────────────────────
+  const renderPaymentDetails = () => {
+    if (!selectedPayment) return null;
+    return (
+      <div style={S.detCard}>
+        {selectedPayment === 'credit' && (
+          <>
+            <div style={S.detHead}><CardIcon size={20}/><h4 style={S.detTitle}>INFORMACIÓN DE TARJETA</h4></div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem' }}>
+              <div style={{ ...S.formGroup, gridColumn:'1/-1' }}>
+                <label style={S.label}><CreditCard size={14}/>Número de Tarjeta</label>
+                <input style={{ ...S.input, ...(errors.cardNumber ? S.inputErr : {}) }} name="cardNumber" value={cardInfo.cardNumber} onChange={handleCardInputChange} placeholder="1234 5678 9012 3456" maxLength="19"/>
+                {errors.cardNumber && <span style={S.errMsg}>{errors.cardNumber}</span>}
+              </div>
+              <div style={S.formGroup}>
+                <label style={S.label}><Calendar size={14}/>Expiración</label>
+                <input style={{ ...S.input, ...(errors.expiryDate ? S.inputErr : {}) }} name="expiryDate" value={cardInfo.expiryDate} onChange={handleCardInputChange} placeholder="MM/AA" maxLength="5"/>
+                {errors.expiryDate && <span style={S.errMsg}>{errors.expiryDate}</span>}
+              </div>
+              <div style={S.formGroup}>
+                <label style={S.label}><Shield size={14}/>CVV</label>
+                <input style={{ ...S.input, ...(errors.cvv ? S.inputErr : {}) }} name="cvv" value={cardInfo.cvv} onChange={handleCardInputChange} placeholder="123" maxLength="3"/>
+                {errors.cvv && <span style={S.errMsg}>{errors.cvv}</span>}
+              </div>
+              <div style={{ ...S.formGroup, gridColumn:'1/-1' }}>
+                <label style={S.label}><UserCheck size={14}/>Nombre en la Tarjeta</label>
+                <input style={{ ...S.input, ...(errors.cardName ? S.inputErr : {}) }} name="cardName" value={cardInfo.cardName} onChange={handleCardInputChange} placeholder="Como aparece en la tarjeta"/>
+                {errors.cardName && <span style={S.errMsg}>{errors.cardName}</span>}
+              </div>
+            </div>
+          </>
+        )}
+        {selectedPayment === 'yape' && (
+          <>
+            <div style={S.detHead}><Smartphone size={20}/><h4 style={S.detTitle}>PAGO CON YAPE / PLIN</h4></div>
+            {[['Número Yape', '+51 999 888 777'],['Número Plin', '+51 999 888 777'],['Nombre', 'SPORTA OFFICIAL']].map(([k,v]) => (
+              <div key={k} style={S.walletItem}><strong style={{ color:'rgba(255,255,255,.6)', fontSize:'.82rem' }}>{k}</strong><span style={{ color:'#fff' }}>{v}</span></div>
+            ))}
+            <p style={{ marginTop:'1rem', color:'rgba(255,255,255,.35)', fontSize:'.82rem' }}>Tu comprobante se generará automáticamente al confirmar.</p>
+          </>
+        )}
+        {selectedPayment === 'transfer' && (
+          <>
+            <div style={S.detHead}><Landmark size={20}/><h4 style={S.detTitle}>TRANSFERENCIA BANCARIA</h4></div>
+            {[['BCP – Soles','191-23456789-0-45'],['Interbank – Soles','898-3100001234'],['BBVA – Soles','0011-0234-0200057891']].map(([bank,num]) => (
+              <div key={bank} style={S.bankItem}>
+                <div style={S.bankLabel}>{bank} · SPORTA S.A.C.</div>
+                <div style={S.bankVal}>{num}</div>
+              </div>
+            ))}
+            <p style={{ marginTop:'.75rem', color:'rgba(255,255,255,.35)', fontSize:'.82rem' }}>Envíanos el comprobante de transferencia para procesar tu pedido.</p>
+          </>
+        )}
+        {selectedPayment === 'cash' && (
+          <>
+            <div style={S.detHead}><Banknote size={20}/><h4 style={S.detTitle}>PAGO CONTRA ENTREGA</h4></div>
+            <p style={{ color:'rgba(255,255,255,.45)', fontSize:'.875rem' }}>Paga en efectivo cuando recibas tu pedido.</p>
+            <div style={S.cashFeats}>
+              {[['💵','Efectivo','Soles exactos'],['📦','Al recibir','Revisa antes de pagar'],['🚚','Delivery','2-3 días hábiles']].map(([e,t,s]) => (
+                <div key={t} style={S.cashFeat}><span style={{ fontSize:'1.5rem' }}>{e}</span><span style={S.cashFeatTit}>{t}</span><span style={S.cashFeatSub}>{s}</span></div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
+    );
+  };
 
-      {formError && (
-        <div className="form-error-message">
-          {formError}
+  const isDisabled = cartItems.length === 0 || isProcessing || formState.submitting;
+
+  // ─── MAIN FORM ────────────────────────────────────────────
+  return (
+    <>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}
+        input:focus,select:focus{outline:none;border-color:rgba(255,69,0,.5)!important;background:rgba(255,69,0,.04)!important;}
+        input::placeholder{color:rgba(255,255,255,.2);}
+        .pay-opt:hover{border-color:rgba(255,69,0,.3)!important;}
+        .pay-btn-main:hover:not(:disabled){background:#e03d00!important;transform:translateY(-2px);box-shadow:0 12px 28px rgba(255,69,0,.35);}
+      `}</style>
+      <div style={S.root}>
+
+        {/* Header */}
+        <div style={S.header}>
+          <h1 style={S.h1}>FINALIZAR COMPRA</h1>
+          <button style={S.backBtn} onClick={onReturnToCart}><ArrowLeft size={15}/>Volver al carrito</button>
         </div>
-      )}
 
-      {formState.error && (
-        <div className="form-warning-message">
-          ⚠️ No se pudo conectar con el servidor, pero puedes continuar con tu pedido.
-        </div>
-      )}
+        {formError && <div style={S.errBanner}>{formError}</div>}
+        {formState.error && <div style={S.warnBanner}>⚠️ No se pudo conectar con el servidor, pero puedes continuar con tu pedido.</div>}
 
-      <div className="checkout-content">
-        {/* Sección de Información de Contacto y Envío */}
-        <div className="customer-info">
-          <div className="section-header">
-            <User size={24} />
-            <h3>Información de Contacto y Envío</h3>
-          </div>
-          
-          <div className="info-form">
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="name">
-                  <User size={16} />
-                  Nombre completo *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={customerInfo.name}
-                  onChange={handleInputChange}
-                  placeholder="Ingresa tu nombre completo"
-                  required
-                  className={errors.name ? 'error' : ''}
-                />
-                {errors.name && <span className="error-message">{errors.name}</span>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="email">
-                  <Mail size={16} />
-                  Correo electrónico *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={customerInfo.email}
-                  onChange={handleInputChange}
-                  placeholder="tu@email.com"
-                  required
-                  className={errors.email ? 'error' : ''}
-                />
-                {errors.email && <span className="error-message">{errors.email}</span>}
-              </div>
+        <div style={S.grid}>
+
+          {/* ── CUSTOMER INFO ── */}
+          <div style={S.card}>
+            <div style={S.cardAccent}/>
+            <div style={S.secHead}><User size={20}/><h3 style={S.secTitle}>INFORMACIÓN DE CONTACTO Y ENVÍO</h3></div>
+
+            <div style={S.formRow}>
+              {[['name','text','Nombre completo *',<User size={14}/>,'Ingresa tu nombre completo'],['email','email','Correo electrónico *',<Mail size={14}/>,'tu@email.com']].map(([name,type,label,icon,ph]) => (
+                <div key={name} style={S.formGroup}>
+                  <label style={S.label}>{icon}{label}</label>
+                  <input type={type} name={name} value={customerInfo[name]} onChange={handleInputChange} placeholder={ph} style={{ ...S.input, ...(errors[name] ? S.inputErr : {}) }}/>
+                  {errors[name] && <span style={S.errMsg}>{errors[name]}</span>}
+                </div>
+              ))}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="phone">
-                  <Phone size={16} />
-                  Teléfono *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={customerInfo.phone}
-                  onChange={handleInputChange}
-                  placeholder="+51 999 888 777"
-                  required
-                  className={errors.phone ? 'error' : ''}
-                />
-                {errors.phone && <span className="error-message">{errors.phone}</span>}
+            <div style={S.formRow}>
+              <div style={S.formGroup}>
+                <label style={S.label}><Phone size={14}/>Teléfono *</label>
+                <input type="tel" name="phone" value={customerInfo.phone} onChange={handleInputChange} placeholder="+51 999 888 777" style={{ ...S.input, ...(errors.phone ? S.inputErr : {}) }}/>
+                {errors.phone && <span style={S.errMsg}>{errors.phone}</span>}
               </div>
-              
-              <div className="form-group">
-                <label htmlFor="district">
-                  <MapPin size={16} />
-                  Distrito *
-                </label>
-                <select
-                  id="district"
-                  name="district"
-                  value={customerInfo.district}
-                  onChange={handleInputChange}
-                  required
-                  className={errors.district ? 'error' : ''}
-                >
+              <div style={S.formGroup}>
+                <label style={S.label}><MapPin size={14}/>Distrito *</label>
+                <select name="district" value={customerInfo.district} onChange={handleInputChange} style={{ ...S.select, ...(errors.district ? S.inputErr : {}) }}>
                   <option value="">Selecciona tu distrito</option>
-                  <option value="Lima">Lima</option>
-                  <option value="Miraflores">Miraflores</option>
-                  <option value="San Isidro">San Isidro</option>
-                  <option value="Barranco">Barranco</option>
-                  <option value="Surco">Surco</option>
-                  <option value="La Molina">La Molina</option>
-                  <option value="Jesus Maria">Jesus Maria</option>
-                  <option value="Lince">Lince</option>
-                  <option value="Magdalena">Magdalena</option>
-                  <option value="Pueblo Libre">Pueblo Libre</option>
-                  <option value="San Miguel">San Miguel</option>
+                  {['Lima','Miraflores','San Isidro','Barranco','Surco','La Molina','Jesus Maria','Lince','Magdalena','Pueblo Libre','San Miguel'].map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-                {errors.district && <span className="error-message">{errors.district}</span>}
+                {errors.district && <span style={S.errMsg}>{errors.district}</span>}
               </div>
             </div>
 
-            <div className="form-group full-width">
-              <label htmlFor="address">
-                <MapPin size={16} />
-                Dirección completa *
-              </label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={customerInfo.address}
-                onChange={handleInputChange}
-                placeholder="Calle, número, departamento, urbanización"
-                required
-                className={errors.address ? 'error' : ''}
-              />
-              {errors.address && <span className="error-message">{errors.address}</span>}
+            <div style={S.formGroup}>
+              <label style={S.label}><MapPin size={14}/>Dirección completa *</label>
+              <input type="text" name="address" value={customerInfo.address} onChange={handleInputChange} placeholder="Calle, número, departamento, urbanización" style={{ ...S.input, ...(errors.address ? S.inputErr : {}) }}/>
+              {errors.address && <span style={S.errMsg}>{errors.address}</span>}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="reference">
-                  Referencia de la dirección
-                </label>
-                <input
-                  type="text"
-                  id="reference"
-                  name="reference"
-                  value={customerInfo.reference}
-                  onChange={handleInputChange}
-                  placeholder="Ej: Frente al parque, altura de..."
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="deliveryNotes">
-                  Indicaciones de entrega
-                </label>
-                <input
-                  type="text"
-                  id="deliveryNotes"
-                  name="deliveryNotes"
-                  value={customerInfo.deliveryNotes}
-                  onChange={handleInputChange}
-                  placeholder="Ej: Timbre azul, dejar con conserje"
-                />
-              </div>
+            <div style={S.formRow}>
+              {[['reference','Referencia de la dirección','Frente al parque...'],['deliveryNotes','Indicaciones de entrega','Timbre azul, dejar con conserje']].map(([name,label,ph]) => (
+                <div key={name} style={S.formGroup}>
+                  <label style={S.label}>{label}</label>
+                  <input type="text" name={name} value={customerInfo[name]} onChange={handleInputChange} placeholder={`Ej: ${ph}`} style={S.input}/>
+                </div>
+              ))}
             </div>
 
-            <div className="delivery-info">
-              <div className="delivery-item">
-                <Truck size={20} />
-                <span>Envío estándar: 2-3 días hábiles</span>
-              </div>
-              <div className="delivery-item">
-                <Clock size={20} />
-                <span>Horario de entrega: 9:00 AM - 7:00 PM</span>
-              </div>
+            <div style={S.delivInfo}>
+              <div style={S.delivItem}><Truck size={16} color="#FF4500"/><span>Envío estándar: 2-3 días hábiles</span></div>
+              <div style={S.delivItem}><Clock size={16} color="#FF4500"/><span>Horario: 9:00 AM – 7:00 PM</span></div>
             </div>
           </div>
-        </div>
 
-        {/* Sección de Resumen del Pedido */}
-        <div className="order-summary">
-          <div className="section-header">
-            <ShoppingCart size={24} />
-            <h3>Resumen del Pedido</h3>
-          </div>
-          <div className="order-items">
-            {cartItems.length === 0 ? (
-              <div className="empty-cart-message">
-                <ShoppingCart size={48} />
-                <p>No hay productos en el carrito</p>
-              </div>
-            ) : (
-              cartItems.map(item => (
-                <div key={item.id} className="order-item">
-                  <img src={item.image} alt={item.name} />
-                  <div className="item-details">
-                    <h4>{item.name}</h4>
-                    <p>Cantidad: {item.quantity}</p>
-                    <p>S/ {item.price} c/u</p>
+          {/* ── ORDER SUMMARY ── */}
+          <div style={S.card}>
+            <div style={S.cardAccent}/>
+            <div style={S.secHead}><ShoppingCart size={20}/><h3 style={S.secTitle}>RESUMEN DEL PEDIDO</h3></div>
+            <div style={S.orderItems}>
+              {cartItems.length === 0 ? (
+                <div style={S.emptyCart}><ShoppingCart size={40}/><p>No hay productos en el carrito</p></div>
+              ) : cartItems.map(item => (
+                <div key={item.id} style={S.orderItem}>
+                  <img src={item.image} alt={item.name} style={S.orderImg}/>
+                  <div>
+                    <div style={S.orderName}>{item.name}</div>
+                    <div style={S.orderMeta}>Cant: {item.quantity} · S/ {item.price} c/u</div>
                   </div>
-                  <div className="item-total">
-                    S/ {(item.price * item.quantity).toFixed(2)}
+                  <span style={S.orderPrice}>S/ {(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            <div style={S.totalRow}>
+              <span style={S.totalLabel}>TOTAL</span>
+              <span style={S.totalVal}>S/ {getTotalPrice ? getTotalPrice().toFixed(2) : '0.00'}</span>
+            </div>
+          </div>
+
+          {/* ── PAYMENT ── (spans full width) */}
+          <div style={{ ...S.card, gridColumn:'1 / -1' }}>
+            <div style={S.cardAccent}/>
+            <div style={S.secHead}><CreditCard size={20}/><h3 style={S.secTitle}>MÉTODO DE PAGO</h3></div>
+
+            <div style={S.payMethods}>
+              {[
+                ['credit', <CreditCard size={22}/>, 'Tarjeta de Crédito/Débito', 'Pago inmediato – Comprobante automático'],
+                ['yape',   <Smartphone size={22}/>,  'Yape / Plin',               'Comprobante automático por correo'],
+                ['transfer',<Landmark size={22}/>,   'Transferencia Bancaria',    'Comprobante automático por correo'],
+                ['cash',   <Banknote size={22}/>,    'Pago contra entrega',       'Paga en efectivo al recibir'],
+              ].map(([val, icon, title, desc]) => (
+                <div key={val} className="pay-opt" style={S.payOption(selectedPayment === val)} onClick={() => setSelectedPayment(val)}>
+                  <span style={S.payIcon}>{icon}</span>
+                  <div><p style={S.payTitle}>{title}</p><p style={S.payDesc}>{desc}</p></div>
+                  <div style={S.radioCircle(selectedPayment === val)}>
+                    {selectedPayment === val && <div style={S.radioDot}/>}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-          <div className="order-total">
-            <h3>Total: S/ {getTotalPrice ? getTotalPrice().toFixed(2) : '0.00'}</h3>
-          </div>
-        </div>
-
-        {/* Sección de Métodos de Pago */}
-        <div className="payment-section">
-          <div className="section-header">
-            <CreditCard size={24} />
-            <h3>Métodos de Pago</h3>
-          </div>
-          
-          <div className="payment-methods">
-            <div 
-              className={`payment-option ${selectedPayment === 'credit' ? 'selected' : ''}`}
-              onClick={() => setSelectedPayment('credit')}
-            >
-              <div className="payment-icon">
-                <CreditCard size={24} />
-              </div>
-              <div className="payment-info">
-                <h4>Tarjeta de Crédito/Débito</h4>
-                <p>Pago inmediato - Comprobante automático</p>
-              </div>
-              <div className="radio-circle">
-                {selectedPayment === 'credit' && <div className="radio-dot"></div>}
-              </div>
+              ))}
             </div>
 
-            <div 
-              className={`payment-option ${selectedPayment === 'yape' ? 'selected' : ''}`}
-              onClick={() => setSelectedPayment('yape')}
-            >
-              <div className="payment-icon">
-                <Smartphone size={24} />
-              </div>
-              <div className="payment-info">
-                <h4>Yape / Plin</h4>
-                <p>Comprobante automático por correo</p>
-              </div>
-              <div className="radio-circle">
-                {selectedPayment === 'yape' && <div className="radio-dot"></div>}
-              </div>
-            </div>
+            {renderPaymentDetails()}
 
-            <div 
-              className={`payment-option ${selectedPayment === 'transfer' ? 'selected' : ''}`}
-              onClick={() => setSelectedPayment('transfer')}
+            <button
+              className="pay-btn-main"
+              style={S.payBtn(isDisabled)}
+              onClick={handlePayment}
+              disabled={isDisabled}
             >
-              <div className="payment-icon">
-                <Landmark size={24} />
-              </div>
-              <div className="payment-info">
-                <h4>Transferencia Bancaria</h4>
-                <p>Comprobante automático por correo</p>
-              </div>
-              <div className="radio-circle">
-                {selectedPayment === 'transfer' && <div className="radio-dot"></div>}
-              </div>
-            </div>
-
-            <div 
-              className={`payment-option ${selectedPayment === 'cash' ? 'selected' : ''}`}
-              onClick={() => setSelectedPayment('cash')}
-            >
-              <div className="payment-icon">
-                <Banknote size={24} />
-              </div>
-              <div className="payment-info">
-                <h4>Pago contra entrega</h4>
-                <p>Paga en efectivo al recibir</p>
-              </div>
-              <div className="radio-circle">
-                {selectedPayment === 'cash' && <div className="radio-dot"></div>}
-              </div>
-            </div>
+              {isProcessing || formState.submitting ? (
+                <><div style={S.spinner}/>{formState.submitting ? 'Enviando...' : 'Procesando pago...'}</>
+              ) : (
+                <><Shield size={18}/>Confirmar Pedido – S/ {getTotalPrice ? getTotalPrice().toFixed(2) : '0.00'}</>
+              )}
+            </button>
           </div>
 
-          {/* Detalles específicos del método de pago seleccionado */}
-          {selectedPayment && renderPaymentDetails()}
-
-          <button 
-            className={`pay-button ${isProcessing ? 'processing' : ''}`}
-            onClick={handlePayment}
-            disabled={cartItems.length === 0 || isProcessing || formState.submitting}
-          >
-            {isProcessing || formState.submitting ? (
-              <>
-                <div className="loading-spinner"></div>
-                {formState.submitting ? 'Enviando...' : 'Procesando Pago...'}
-              </>
-            ) : (
-              <>
-                <Shield size={20} />
-                Confirmar Pedido - S/ {getTotalPrice ? getTotalPrice().toFixed(2) : '0.00'}
-              </>
-            )}
-          </button>
-
-          {formState.error && (
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '1rem',
-              color: 'var(--text-secondary)',
-              fontSize: '0.9rem'
-            }}>
-              ⚠️ El pedido se procesará localmente
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

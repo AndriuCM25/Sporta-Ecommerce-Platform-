@@ -13,7 +13,7 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
   const validateForm = () => {
     const newErrors = {}
     if (!formData.email) newErrors.email = 'El email es requerido'
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'El email no es válido'
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido'
     if (!formData.password) newErrors.password = 'La contraseña es requerida'
     else if (formData.password.length < 6) newErrors.password = 'Mínimo 6 caracteres'
     if (!isLogin) {
@@ -32,7 +32,6 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
       id: Date.now(),
       name: isLogin ? formData.email.split('@')[0] : formData.name,
       email: formData.email,
-      loginDate: new Date().toLocaleDateString()
     }
     isLogin ? onLogin(userData) : onRegister(userData)
     setFormData({ name: '', email: '', password: '', confirmPassword: '' })
@@ -44,119 +43,281 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
     setFormData({ name: '', email: '', password: '', confirmPassword: '' })
   }
 
-  const inputBase = "w-full px-4 py-3 rounded-xl border-2 bg-black text-white text-base font-sans transition-all duration-300 focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_3px_rgba(0,102,204,0.1)]"
-  const inputError = "border-red-600"
-  const inputNormal = "border-white/20"
-
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] flex items-center justify-center animate-[fadeIn_0.3s_ease]">
-      <div className="w-full max-w-md bg-zinc-950 rounded-2xl border-2 border-white/10 shadow-2xl animate-[slideUp_0.3s_ease] overflow-hidden">
+    <>
+      <style>{`
+        .auth-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.85);
+          backdrop-filter: blur(12px);
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          animation: fadeIn 0.25s ease;
+          font-family: 'DM Sans', sans-serif;
+        }
+        .auth-box {
+          background: #111;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 20px;
+          width: 100%;
+          max-width: 420px;
+          overflow: hidden;
+          animation: slideInUp 0.3s ease;
+          box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+        }
+        @keyframes slideInUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .auth-head {
+          padding: 1.75rem 1.75rem 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .auth-head h2 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 1.6rem;
+          letter-spacing: 2px;
+          color: #fff;
+        }
+        .auth-head h2 span { color: #FF4500; }
+        .auth-close {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.5);
+          width: 34px; height: 34px;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .auth-close:hover {
+          background: rgba(255,69,0,0.15);
+          border-color: rgba(255,69,0,0.3);
+          color: #FF4500;
+          transform: rotate(90deg);
+        }
+        .auth-tabs {
+          display: flex;
+          gap: 0;
+          margin: 1.5rem 1.75rem 0;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 10px;
+          padding: 3px;
+        }
+        .auth-tab {
+          flex: 1;
+          background: none;
+          border: none;
+          color: rgba(255,255,255,0.4);
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.82rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          padding: 0.5rem;
+          border-radius: 7px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-transform: uppercase;
+        }
+        .auth-tab.active {
+          background: #FF4500;
+          color: #fff;
+          box-shadow: 0 4px 12px rgba(255,69,0,0.3);
+        }
+        .auth-form {
+          padding: 1.5rem 1.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .auth-field label {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 6px;
+        }
+        .auth-field input {
+          width: 100%;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          color: #fff;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.9rem;
+          padding: 0.75rem 1rem;
+          transition: all 0.2s ease;
+        }
+        .auth-field input:focus {
+          outline: none;
+          border-color: rgba(255,69,0,0.5);
+          background: rgba(255,69,0,0.04);
+          box-shadow: 0 0 0 3px rgba(255,69,0,0.08);
+        }
+        .auth-field input.err {
+          border-color: rgba(255,60,60,0.5);
+        }
+        .auth-field input::placeholder {
+          color: rgba(255,255,255,0.2);
+        }
+        .auth-err {
+          color: #ff6b6b;
+          font-size: 0.72rem;
+          margin-top: 4px;
+          display: block;
+        }
+        .auth-submit {
+          width: 100%;
+          background: #FF4500;
+          color: #fff;
+          border: none;
+          padding: 0.9rem;
+          border-radius: 10px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.9rem;
+          font-weight: 700;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          margin-top: 0.25rem;
+        }
+        .auth-submit:hover {
+          background: #e03d00;
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px rgba(255,69,0,0.35);
+        }
+        .auth-divider {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 0 1.75rem;
+          margin-bottom: 0.5rem;
+        }
+        .auth-divider::before, .auth-divider::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: rgba(255,255,255,0.07);
+        }
+        .auth-divider span {
+          color: rgba(255,255,255,0.25);
+          font-size: 0.72rem;
+          white-space: nowrap;
+        }
+        .auth-google {
+          margin: 0 1.75rem 1.75rem;
+          width: calc(100% - 3.5rem);
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.6);
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.85rem;
+          font-weight: 500;
+          padding: 0.75rem;
+          border-radius: 10px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+          transition: all 0.2s ease;
+        }
+        .auth-google:hover {
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(255,255,255,0.15);
+          color: #fff;
+        }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+      `}</style>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-white/10">
-          <h2 className="text-white text-xl font-bold" style={{fontFamily: 'Orbitron, sans-serif'}}>
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-white p-2 rounded-md transition-all duration-300 hover:bg-red-600 hover:rotate-90 cursor-pointer bg-transparent border-none"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="px-7 py-6 space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-white text-sm font-semibold mb-1.5">Nombre Completo</label>
-              <input
-                type="text" name="name" value={formData.name} onChange={handleChange}
-                placeholder="Ingresa tu nombre completo"
-                className={`${inputBase} ${errors.name ? inputError : inputNormal}`}
-              />
-              {errors.name && <span className="text-red-500 text-xs mt-1 block">{errors.name}</span>}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-white text-sm font-semibold mb-1.5">Email</label>
-            <input
-              type="email" name="email" value={formData.email} onChange={handleChange}
-              placeholder="tu@email.com"
-              className={`${inputBase} ${errors.email ? inputError : inputNormal}`}
-            />
-            {errors.email && <span className="text-red-500 text-xs mt-1 block">{errors.email}</span>}
-          </div>
-
-          <div>
-            <label className="block text-white text-sm font-semibold mb-1.5">Contraseña</label>
-            <input
-              type="password" name="password" value={formData.password} onChange={handleChange}
-              placeholder="Mínimo 6 caracteres"
-              className={`${inputBase} ${errors.password ? inputError : inputNormal}`}
-            />
-            {errors.password && <span className="text-red-500 text-xs mt-1 block">{errors.password}</span>}
-          </div>
-
-          {!isLogin && (
-            <div>
-              <label className="block text-white text-sm font-semibold mb-1.5">Confirmar Contraseña</label>
-              <input
-                type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
-                placeholder="Repite tu contraseña"
-                className={`${inputBase} ${errors.confirmPassword ? inputError : inputNormal}`}
-              />
-              {errors.confirmPassword && <span className="text-red-500 text-xs mt-1 block">{errors.confirmPassword}</span>}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3.5 rounded-xl font-bold uppercase tracking-wide text-base cursor-pointer border-none mt-2 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300"
-          >
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
-          </button>
-        </form>
-
-        {/* Footer */}
-        <div className="px-7 pb-4 text-center">
-          <p className="text-gray-400 text-sm">
-            {isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
-            <button onClick={switchMode} className="text-blue-500 font-semibold ml-1 underline bg-transparent border-none cursor-pointer hover:text-blue-400 transition-colors">
-              {isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
+      <div className="auth-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="auth-box">
+          <div className="auth-head">
+            <h2>SPORT<span>A</span></h2>
+            <button className="auth-close" onClick={onClose}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
             </button>
-          </p>
-        </div>
+          </div>
 
-        {/* Divider */}
-        <div className="relative px-7 pb-4 flex items-center gap-4">
-          <div className="flex-1 h-px bg-white/10"/>
-          <span className="text-gray-500 text-sm">o continúa con</span>
-          <div className="flex-1 h-px bg-white/10"/>
-        </div>
+          <div className="auth-tabs">
+            <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => !isLogin && switchMode()}>
+              Ingresar
+            </button>
+            <button className={`auth-tab ${!isLogin ? 'active' : ''}`} onClick={() => isLogin && switchMode()}>
+              Registrarse
+            </button>
+          </div>
 
-        {/* Google */}
-        <div className="px-7 pb-6">
-          <button className="w-full flex items-center justify-center gap-3 bg-black border-2 border-white/20 text-white py-3 rounded-xl font-semibold cursor-pointer hover:border-blue-600 hover:-translate-y-0.5 transition-all duration-300">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M21.8055 10.0415H21V10H12V14H17.6515C16.827 16.3285 14.6115 18 12 18C8.6865 18 6 15.3135 6 12C6 8.6865 8.6865 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C6.4775 2 2 6.4775 2 12C2 17.5225 6.4775 22 12 22C17.5225 22 22 17.5225 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#FFC107"/>
-              <path d="M3.153 7.3455L6.4385 9.755C7.3275 7.554 9.4805 6 12 6C13.5295 6 14.921 6.577 15.9805 7.5195L18.809 4.691C17.023 3.0265 14.634 2 12 2C8.159 2 4.828 4.1685 3.153 7.3455Z" fill="#FF3D00"/>
-              <path d="M12 22C14.583 22 16.93 21.0115 18.7045 19.404L15.6095 16.785C14.6055 17.5455 13.3575 18 12 18C9.399 18 7.1905 16.3415 6.3585 14.027L3.0975 16.5395C4.7525 19.778 8.1135 22 12 22Z" fill="#4CAF50"/>
-              <path d="M21.8055 10.0415H21V10H12V14H17.6515C17.2555 15.1185 16.536 16.083 15.608 16.7855L18.7045 19.4035C18.4855 19.6025 22 17 22 12C22 11.3295 21.931 10.675 21.8055 10.0415Z" fill="#1976D2"/>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div className="auth-field">
+                <label>Nombre completo</label>
+                <input
+                  type="text" name="name" value={formData.name}
+                  onChange={handleChange} placeholder="Tu nombre"
+                  className={errors.name ? 'err' : ''}
+                />
+                {errors.name && <span className="auth-err">{errors.name}</span>}
+              </div>
+            )}
+            <div className="auth-field">
+              <label>Email</label>
+              <input
+                type="email" name="email" value={formData.email}
+                onChange={handleChange} placeholder="tu@email.com"
+                className={errors.email ? 'err' : ''}
+              />
+              {errors.email && <span className="auth-err">{errors.email}</span>}
+            </div>
+            <div className="auth-field">
+              <label>Contraseña</label>
+              <input
+                type="password" name="password" value={formData.password}
+                onChange={handleChange} placeholder="Mínimo 6 caracteres"
+                className={errors.password ? 'err' : ''}
+              />
+              {errors.password && <span className="auth-err">{errors.password}</span>}
+            </div>
+            {!isLogin && (
+              <div className="auth-field">
+                <label>Confirmar contraseña</label>
+                <input
+                  type="password" name="confirmPassword" value={formData.confirmPassword}
+                  onChange={handleChange} placeholder="Repite tu contraseña"
+                  className={errors.confirmPassword ? 'err' : ''}
+                />
+                {errors.confirmPassword && <span className="auth-err">{errors.confirmPassword}</span>}
+              </div>
+            )}
+            <button type="submit" className="auth-submit">
+              {isLogin ? 'Entrar' : 'Crear cuenta'}
+            </button>
+          </form>
+
+          <div className="auth-divider"><span>o continúa con</span></div>
+          <button className="auth-google">
+            <svg width="17" height="17" viewBox="0 0 24 24">
+              <path d="M21.8 10.04H21V10H12v4h5.65C16.83 16.33 14.61 18 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-.67-.07-1.33-.2-1.96z" fill="#4285F4"/>
+              <path d="M3.15 7.35L6.44 9.75C7.33 7.55 9.48 6 12 6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 8.16 2 4.83 4.17 3.15 7.35z" fill="#EA4335"/>
+              <path d="M12 22c2.58 0 4.93-1 6.7-2.6l-3.09-2.62A5.95 5.95 0 0112 18c-2.6 0-4.81-1.66-5.64-3.97L3.1 16.54C4.75 19.78 8.11 22 12 22z" fill="#34A853"/>
+              <path d="M21.8 10.04H21V10H12v4h5.65a6.01 6.01 0 01-2.04 2.79l3.1 2.62C18.49 19.6 22 17 22 12c0-.67-.07-1.33-.2-1.96z" fill="#FBBC05"/>
             </svg>
-            Google
+            Continuar con Google
           </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) } to { opacity: 1; transform: translateY(0) } }
-      `}</style>
-    </div>
+    </>
   )
 }
 
