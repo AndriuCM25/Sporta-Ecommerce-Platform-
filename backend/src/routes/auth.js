@@ -75,6 +75,7 @@ router.get('/me', async (req, res) => {
   }
 })
 
+<<<<<<< HEAD
 // POST /api/auth/google/register - Para REGISTRO (crea usuarios nuevos)
 // IMPORTANTE: Esta ruta debe ir ANTES de /google porque es más específica
 router.post('/google/register', async (req, res) => {
@@ -215,4 +216,6 @@ router.post('/google', async (req, res) => {
   }
 })
 
+=======
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 export default router

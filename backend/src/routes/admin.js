@@ -43,6 +43,7 @@ router.delete('/users/:id', async (req, res) => {
 
 // POST /api/admin/products
 router.post('/products', async (req, res) => {
+<<<<<<< HEAD
   const { name, category, price, image, badge, description, stock, sizes, colors, features, is_featured } = req.body
   if (!name || !category || !price)
     return res.status(400).json({ error: 'Nombre, categoría y precio son requeridos' })
@@ -78,6 +79,15 @@ router.post('/products', async (req, res) => {
       is_featured: is_featured ?? false,
       status: (stock ?? 100) === 0 ? 'out_of_stock' : 'active'
     })
+=======
+  const { name, category, price, image, badge, description, stock } = req.body
+  if (!name || !category || !price)
+    return res.status(400).json({ error: 'Nombre, categoría y precio son requeridos' })
+
+  const { data, error } = await supabase
+    .from('products')
+    .insert({ name, category, price, image: image || null, badge: badge || null, description: description || null, stock: stock ?? 100 })
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
     .select().single()
   if (error) return res.status(500).json({ error: error.message })
   res.status(201).json({ product: data })
@@ -85,6 +95,7 @@ router.post('/products', async (req, res) => {
 
 // PATCH /api/admin/products/:id
 router.patch('/products/:id', async (req, res) => {
+<<<<<<< HEAD
   const { name, category, price, image, badge, description, stock, sizes, colors, features, is_featured } = req.body
   const updates = {}
   
@@ -118,6 +129,17 @@ router.patch('/products/:id', async (req, res) => {
   if (colors !== undefined) updates.colors = colors
   if (features !== undefined) updates.features = features
   if (is_featured !== undefined) updates.is_featured = is_featured
+=======
+  const { name, category, price, image, badge, description, stock } = req.body
+  const updates = {}
+  if (name !== undefined)        updates.name = name
+  if (category !== undefined)    updates.category = category
+  if (price !== undefined)       updates.price = price
+  if (image !== undefined)       updates.image = image
+  if (badge !== undefined)       updates.badge = badge
+  if (description !== undefined) updates.description = description
+  if (stock !== undefined)       updates.stock = stock
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
   const { data, error } = await supabase
     .from('products').update(updates).eq('id', req.params.id).select().single()

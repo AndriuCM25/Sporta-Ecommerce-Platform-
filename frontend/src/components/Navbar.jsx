@@ -7,7 +7,8 @@ const Navbar = ({
   setShowCart,
   user,
   onLogout,
-  setShowAuth
+  setShowAuth,
+  setShowRegister
 }) => {
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -139,6 +140,25 @@ const Navbar = ({
           align-items: center;
           justify-content: center;
           border: 2px solid #080808;
+        }
+        .nav-btn-register {
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.15);
+          color: rgba(255,255,255,0.7);
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          padding: 0.5rem 1.2rem;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        .nav-btn-register:hover {
+          border-color: rgba(255,255,255,0.35);
+          color: #fff;
+          transform: translateY(-1px);
         }
         .nav-btn-login {
           background: #FF4500;
@@ -284,9 +304,14 @@ const Navbar = ({
                 </div>
               </div>
             ) : (
-              <button className="nav-btn-login" onClick={() => setShowAuth(true)}>
-                Iniciar sesión
-              </button>
+              <>
+                <button className="nav-btn-register" onClick={() => setShowRegister(true)}>
+                  Registrarse
+                </button>
+                <button className="nav-btn-login" onClick={() => setShowAuth(true)}>
+                  Iniciar sesión
+                </button>
+              </>
             )}
           </div>
         </div>

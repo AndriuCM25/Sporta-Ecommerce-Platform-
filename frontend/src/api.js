@@ -32,8 +32,13 @@ export const api = {
   login: (data) =>
     fetch(`${BASE}/auth/login`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json()),
 
+<<<<<<< HEAD
   googleAuth: (data) =>
     fetch(`${BASE}/auth/google`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json()),
+=======
+  loginWithGoogle: (credential) =>
+    fetch(`${BASE}/auth/google`, { method: 'POST', headers: headers(), body: JSON.stringify({ credential }) }).then(r => r.json()),
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
   me: (token) =>
     fetch(`${BASE}/auth/me`, {
@@ -52,6 +57,7 @@ export const api = {
   getCart: () =>
     fetch(`${BASE}/cart`, { headers: headers() }).then(r => r.json()),
 
+<<<<<<< HEAD
   addToCart: (product_id, quantity = 1, selected_size = null, selected_color = null) =>
     fetch(`${BASE}/cart`, { 
       method: 'POST', 
@@ -77,6 +83,19 @@ export const api = {
       method: 'DELETE', 
       headers: headers() 
     }).then(r => r.json()),
+=======
+  addToCart: (product_id, quantity = 1) =>
+    fetch(`${BASE}/cart`, { method: 'POST', headers: headers(), body: JSON.stringify({ product_id, quantity }) }).then(r => r.json()),
+
+  updateCartItem: (product_id, quantity) =>
+    fetch(`${BASE}/cart/${product_id}`, { method: 'PATCH', headers: headers(), body: JSON.stringify({ quantity }) }).then(r => r.json()),
+
+  removeFromCart: (product_id) =>
+    fetch(`${BASE}/cart/${product_id}`, { method: 'DELETE', headers: headers() }).then(r => r.json()),
+
+  clearCart: () =>
+    fetch(`${BASE}/cart`, { method: 'DELETE', headers: headers() }).then(r => r.json()),
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
   // ORDERS
   createOrder: (data) =>

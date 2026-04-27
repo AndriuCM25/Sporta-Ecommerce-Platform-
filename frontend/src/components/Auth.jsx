@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from 'react'
 
 // Email exclusivo del administrador
@@ -156,10 +157,52 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
       setGoogleLoading(false)
     }
   }
+=======
+import { useState } from 'react'
+import { useGoogleLogin } from '@react-oauth/google'
+
+const Auth = ({ onClose, onLogin, onRegister, initialMode = 'login' }) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login')
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
+  const [errors, setErrors] = useState({})
+  const [authError, setAuthError] = useState('')
+  const [googleLoading, setGoogleLoading] = useState(false)
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true)
+      try {
+        const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        }).then(r => r.json())
+
+        const res = await fetch('http://localhost:3001/api/auth/google-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userInfo.email, name: userInfo.name, googleId: userInfo.sub, isRegister: !isLogin })
+        }).then(r => r.json())
+
+        if (res.error) { setAuthError(res.error); return }
+        localStorage.setItem('sporta_token', res.token)
+        localStorage.setItem('sporta_user', JSON.stringify(res.user))
+        onLogin(res)
+      } catch {
+        alert('Error al iniciar sesión con Google')
+      } finally {
+        setGoogleLoading(false)
+      }
+    },
+    onError: () => setAuthError('Error al conectar con Google')
+  })
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' })
+<<<<<<< HEAD
+=======
+    if (authError) setAuthError('')
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
   }
 
   const validateForm = () => {
@@ -180,6 +223,7 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
+<<<<<<< HEAD
 
     setLoading(true)
     setErrors({})
@@ -219,16 +263,31 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
       setErrors({ general: 'Error de conexión. Verifica que el servidor esté corriendo.' })
     } finally {
       setLoading(false)
+=======
+    setAuthError('')
+    if (isLogin) {
+      await onLogin({ email: formData.email, password: formData.password }, setAuthError)
+    } else {
+      await onRegister({ name: formData.name, email: formData.email, password: formData.password }, setAuthError)
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
     }
   }
 
   const switchMode = () => {
     setIsLogin(!isLogin)
     setErrors({})
+<<<<<<< HEAD
     setFormData({ name: '', email: '', password: '', confirmPassword: '' })
   }
 
   const isAdminEmail = formData.email === ADMIN_EMAIL
+=======
+    setAuthError('')
+    setFormData({ name: '', email: '', password: '', confirmPassword: '' })
+  }
+
+  const isAdminEmail = formData.email === 'adminSporta@depor.pe'
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
   return (
     <>
@@ -457,11 +516,16 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
           gap: 0.6rem;
           transition: all 0.2s ease;
         }
+<<<<<<< HEAD
         .auth-google:hover:not(:disabled) {
+=======
+        .auth-google:hover {
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
           background: rgba(255,255,255,0.07);
           border-color: rgba(255,255,255,0.15);
           color: #fff;
         }
+<<<<<<< HEAD
         .auth-google:disabled {
           opacity: 0.5;
           cursor: not-allowed;
@@ -470,6 +534,9 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
+=======
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
       `}</style>
 
       <div className="auth-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -483,7 +550,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
             </button>
           </div>
 
+<<<<<<< HEAD
           {/* Badge de admin cuando detecta el email */}
+=======
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
           {isAdminEmail && isLogin && (
             <div className="auth-admin-badge">
               <div className="auth-admin-badge-icon">
@@ -499,7 +569,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
             </div>
           )}
 
+<<<<<<< HEAD
           {/* Tabs solo si no es admin */}
+=======
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
           {!isAdminEmail && (
             <div className="auth-tabs">
               <button className={`auth-tab ${isLogin ? 'active' : ''}`} onClick={() => !isLogin && switchMode()}>
@@ -552,11 +625,34 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
                 {errors.confirmPassword && <span className="auth-err">{errors.confirmPassword}</span>}
               </div>
             )}
+<<<<<<< HEAD
+=======
+            {authError && (
+              <div style={{
+                background: 'rgba(255,60,60,0.1)',
+                border: '1px solid rgba(255,60,60,0.3)',
+                borderRadius: '10px',
+                padding: '0.75rem 1rem',
+                color: '#ff6b6b',
+                fontSize: '0.82rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                {authError}
+              </div>
+            )}
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
             <button type="submit" className={`auth-submit ${isAdminEmail ? 'admin-btn' : ''}`}>
               {isAdminEmail ? 'Acceder como Admin' : isLogin ? 'Entrar' : 'Crear cuenta'}
             </button>
           </form>
 
+<<<<<<< HEAD
           {/* Google OAuth solo para usuarios normales */}
           {!isAdminEmail && (
             <>
@@ -591,6 +687,20 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
                   {errors.google}
                 </p>
               )}
+=======
+          {!isAdminEmail && (
+            <>
+              <div className="auth-divider"><span>o continúa con</span></div>
+              <button className="auth-google" onClick={handleGoogleLogin} disabled={googleLoading}>
+                <svg width="17" height="17" viewBox="0 0 24 24">
+                  <path d="M21.8 10.04H21V10H12v4h5.65C16.83 16.33 14.61 18 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-.67-.07-1.33-.2-1.96z" fill="#4285F4"/>
+                  <path d="M3.15 7.35L6.44 9.75C7.33 7.55 9.48 6 12 6c1.53 0 2.92.58 3.98 1.52L18.81 4.7C17.02 3.03 14.63 2 12 2 8.16 2 4.83 4.17 3.15 7.35z" fill="#EA4335"/>
+                  <path d="M12 22c2.58 0 4.93-1 6.7-2.6l-3.09-2.62A5.95 5.95 0 0112 18c-2.6 0-4.81-1.66-5.64-3.97L3.1 16.54C4.75 19.78 8.11 22 12 22z" fill="#34A853"/>
+                  <path d="M21.8 10.04H21V10H12v4h5.65a6.01 6.01 0 01-2.04 2.79l3.1 2.62C18.49 19.6 22 17 22 12c0-.67-.07-1.33-.2-1.96z" fill="#FBBC05"/>
+                </svg>
+                {googleLoading ? 'Conectando...' : 'Continuar con Google'}
+              </button>
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
             </>
           )}
         </div>
@@ -599,4 +709,8 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
   )
 }
 
+<<<<<<< HEAD
 export default Auth
+=======
+export default Auth
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854

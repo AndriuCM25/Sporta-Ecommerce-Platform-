@@ -1,4 +1,4 @@
-const About = () => {
+const About = ({ setCurrentPage }) => {
   const stats = [
     { value: '75+', label: 'Años de historia' },
     { value: '160+', label: 'Países presentes' },
@@ -444,7 +444,7 @@ const About = () => {
         <div className="ab-cta">
           <h2>ÚNETE AL <span>EQUIPO</span></h2>
           <p>Explora nuestra colección y forma parte de la comunidad de atletas que eligen rendimiento sin compromisos.</p>
-          <button className="ab-cta-btn">Ver productos</button>
+          <button className="ab-cta-btn" onClick={() => setCurrentPage('products')}>Ver productos</button>
         </div>
       </div>
     </>

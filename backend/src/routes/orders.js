@@ -26,6 +26,7 @@ router.post('/', authenticate, async (req, res) => {
   const shipping = subtotal >= 150 ? 0 : 15
   const total = subtotal + shipping
 
+<<<<<<< HEAD
   // Determinar estado inicial según método de pago
   let status = 'pending' // Por defecto: pendiente
   
@@ -43,12 +44,18 @@ router.post('/', authenticate, async (req, res) => {
     status = 'pending'
   }
 
+=======
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
       user_id: req.user.id, name, email, phone, address, district,
       reference: reference || null, delivery_notes: delivery_notes || null,
+<<<<<<< HEAD
       payment_method, subtotal, shipping, total, status
+=======
+      payment_method, subtotal, shipping, total
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
     })
     .select().single()
 
@@ -63,9 +70,13 @@ router.post('/', authenticate, async (req, res) => {
     name: item.name,
     price: item.price,
     quantity: item.quantity,
+<<<<<<< HEAD
     image: item.image || null,
     selected_size: item.selectedSize || null,
     selected_color: item.selectedColor || null
+=======
+    image: item.image || null
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
   }))
 
   const { data: insertedItems, error: itemsError } = await supabase

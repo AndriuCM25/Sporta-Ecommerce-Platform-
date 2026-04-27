@@ -401,6 +401,56 @@ const Hero = () => {
           .carousel-track { justify-content: flex-start; }
           .video-modal-content { max-width: 95%; }
         }
+
+        /* VIDEO MODAL */
+        .video-modal-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.92);
+          backdrop-filter: blur(12px);
+          z-index: 9999;
+          display: flex; align-items: center; justify-content: center;
+          padding: 2rem;
+          animation: fadeIn 0.3s ease;
+        }
+        .video-modal-content {
+          position: relative; width: 100%; max-width: 1100px;
+          background: #111; border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 20px; overflow: hidden;
+          box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+          animation: slideUp 0.4s ease;
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(40px) scale(0.95); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .video-modal-header {
+          padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+          display: flex; align-items: center; justify-content: space-between;
+          background: linear-gradient(135deg, rgba(255,69,0,0.05), transparent);
+        }
+        .video-modal-title {
+          font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
+          letter-spacing: 2px; color: #fff;
+          display: flex; align-items: center; gap: 0.75rem;
+        }
+        .video-modal-title svg { color: #FF4500; }
+        .video-modal-close {
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.6); width: 36px; height: 36px;
+          border-radius: 8px; display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all 0.2s ease;
+        }
+        .video-modal-close:hover {
+          background: rgba(255,69,0,0.15); border-color: rgba(255,69,0,0.3);
+          color: #FF4500; transform: rotate(90deg);
+        }
+        .video-modal-body {
+          position: relative; padding-bottom: 56.25%; background: #000;
+        }
+        .video-modal-body video {
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          object-fit: contain;
+        }
       `}</style>
 
       <section className="hero-root">
@@ -475,9 +525,14 @@ const Hero = () => {
         </div>
       </section>
 
+<<<<<<< HEAD
       {/* VIDEO MODAL */}
       {showVideoModal && (
         <div className="video-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowVideoModal(false)}>
+=======
+      {showVideoModal && (
+        <div className="video-modal-overlay" onClick={e => e.target === e.currentTarget && setShowVideoModal(false)}>
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
           <div className="video-modal-content">
             <div className="video-modal-header">
               <div className="video-modal-title">

@@ -7,6 +7,7 @@ const Products = ({ addToCart, viewProductDetail, user, onShowAuth }) => {
   const [activeCategory, setActiveCategory] = useState('all')
   const [sortBy, setSortBy] = useState('default')
   const [products, setProducts] = useState([])
+<<<<<<< HEAD
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,17 +25,21 @@ const Products = ({ addToCart, viewProductDetail, user, onShowAuth }) => {
     }
     setLoading(false)
   }
+=======
+  const [loading, setLoading] = useState(false)
 
-  const categories = ['all', ...new Set(products.map(p => p.category))]
-  const categoryLabels = { all:'Todos', running:'Running', lifestyle:'Lifestyle', basketball:'Basketball' }
+  useEffect(() => {
+    if (!user) return
+    setLoading(true)
+    api.getProducts({ category: activeCategory, search, sort: sortBy })
+      .then(res => setProducts(res.products || []))
+      .finally(() => setLoading(false))
+  }, [user, activeCategory, search, sortBy])
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
 
-  let filtered = products
-    .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-    .filter(p => activeCategory === 'all' || p.category === activeCategory)
-
-  if (sortBy === 'price-asc')  filtered = [...filtered].sort((a,b) => a.price - b.price)
-  if (sortBy === 'price-desc') filtered = [...filtered].sort((a,b) => b.price - a.price)
-  if (sortBy === 'name')       filtered = [...filtered].sort((a,b) => a.name.localeCompare(b.name))
+  const categories = ['all', 'running', 'lifestyle', 'basketball']
+  const categoryLabels = { all: 'Todos', running: 'Running', lifestyle: 'Lifestyle', basketball: 'Basketball' }
+  const filtered = products
 
   return (
     <>
@@ -241,7 +246,11 @@ const Products = ({ addToCart, viewProductDetail, user, onShowAuth }) => {
             </div>
 
             {/* Grid */}
-            {filtered.length > 0 ? (
+            {loading ? (
+              <div className="prod-empty">
+                <p style={{color:'rgba(255,255,255,.3)'}}>Cargando productos...</p>
+              </div>
+            ) : filtered.length > 0 ? (
               <div className="prod-grid">
                 {filtered.map(product => (
                   <ProductCard

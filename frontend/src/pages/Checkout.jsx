@@ -4,14 +4,19 @@ import {
   ShoppingCart, Shield, Mail, FileText, User, Phone, MapPin, Clock,
   Truck, Download, Calendar, CreditCard as CardIcon, UserCheck
 } from 'lucide-react';
+import { api } from '../api';
 
+<<<<<<< HEAD
 const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }) => {
+=======
+const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, onGoHome }) => {
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
   const [selectedPayment, setSelectedPayment] = useState('');
   const [orderCompleted, setOrderCompleted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
-  const [formState, setFormState] = useState({ submitting: false, succeeded: false, error: null });
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
 
   const [customerInfo, setCustomerInfo] = useState({
     name: '', email: '', phone: '', address: '', district: '', reference: '', deliveryNotes: ''
@@ -19,7 +24,6 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
   const [cardInfo, setCardInfo] = useState({ cardNumber: '', expiryDate: '', cvv: '', cardName: '' });
 
   const cartItems = cart || [];
-  const FORMSPREE_ENDPOINT = 'https://formspree.io/f/movkyjko';
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -61,23 +65,10 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
     return Object.keys(e).length === 0;
   };
 
-  const submitToFormspree = async (formData) => {
-    setFormState({ submitting: true, succeeded: false, error: null });
-    const response = await fetch(FORMSPREE_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
-    if (!response.ok) throw new Error(`Error ${response.status}`);
-    const data = await response.json();
-    setFormState({ submitting: false, succeeded: true, error: null });
-    return data;
-  };
-
   const generateReceipt = () => ({
     receiptNumber: `COMP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
     receiptDate: new Date().toLocaleDateString('es-PE'),
-    receiptAmount: getTotalPrice ? getTotalPrice().toFixed(2) : '0.00',
+    receiptAmount: confirmedTotal.toFixed(2),
     bankName: selectedPayment === 'yape' ? 'Yape' :
               selectedPayment === 'transfer' ? 'Transferencia Bancaria' :
               selectedPayment === 'credit' ? 'Tarjeta de Crédito/Débito' : 'Efectivo',
@@ -110,15 +101,20 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
     setFormError('');
     
     try {
+<<<<<<< HEAD
       const r = generateReceipt();
       
       // Preparar datos del pedido para el backend
       const orderData = {
+=======
+      const res = await api.createOrder({
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
         name: customerInfo.name,
         email: customerInfo.email,
         phone: customerInfo.phone,
         address: customerInfo.address,
         district: customerInfo.district,
+<<<<<<< HEAD
         reference: customerInfo.reference || '',
         delivery_notes: customerInfo.deliveryNotes || '',
         payment_method: selectedPayment,
@@ -207,6 +203,28 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
     } catch (error) {
       console.error('Error al procesar el pago:', error);
       setFormError(error.message || 'Hubo un error procesando tu pago. Por favor intenta nuevamente.');
+=======
+        reference: customerInfo.reference,
+        delivery_notes: customerInfo.deliveryNotes,
+        payment_method: selectedPayment,
+        items: cartItems.map(i => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          image: i.image,
+        })),
+      });
+      if (res.error) {
+        setFormError(res.error);
+        return;
+      }
+      setConfirmedTotal(getTotalPrice ? getTotalPrice() : 0);
+      setOrderCompleted(true);
+      if (onOrderComplete) onOrderComplete();
+    } catch {
+      setFormError('Hubo un error procesando tu pedido. Verifica que el servidor esté corriendo.');
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
     } finally {
       setIsProcessing(false);
     }
@@ -283,7 +301,7 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
   };
 
   // ─── SUCCESS SCREEN ────────────────────────────────────────
-  if (orderCompleted || formState.succeeded) {
+  if (orderCompleted) {
     const r = generateReceipt();
     return (
       <>
@@ -320,10 +338,14 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
 
               <div style={S.successActs}>
                 <button style={S.dlBtn} onClick={downloadReceipt}><Download size={16}/>Descargar comprobante</button>
+<<<<<<< HEAD
                 <button style={S.contBtn} onClick={() => {
                   // Cerrar checkout y volver al inicio
                   window.location.href = '/';
                 }}><ShoppingCart size={16}/>Volver a la tienda</button>
+=======
+                <button style={S.contBtn} onClick={onGoHome}><ShoppingCart size={16}/>Volver a la tienda</button>
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
               </div>
             </div>
           </div>
@@ -400,7 +422,7 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
     );
   };
 
-  const isDisabled = cartItems.length === 0 || isProcessing || formState.submitting;
+  const isDisabled = cartItems.length === 0 || isProcessing;
 
   // ─── MAIN FORM ────────────────────────────────────────────
   return (
@@ -420,7 +442,6 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
         </div>
 
         {formError && <div style={S.errBanner}>{formError}</div>}
-        {formState.error && <div style={S.warnBanner}>⚠️ No se pudo conectar con el servidor, pero puedes continuar con tu pedido.</div>}
 
         <div style={S.grid}>
 
@@ -538,8 +559,8 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
               onClick={handlePayment}
               disabled={isDisabled}
             >
-              {isProcessing || formState.submitting ? (
-                <><div style={S.spinner}/>{formState.submitting ? 'Enviando...' : 'Procesando pago...'}</>
+              {isProcessing ? (
+                <><div style={S.spinner}/>Procesando pedido...</>
               ) : (
                 <><Shield size={18}/>Confirmar Pedido – S/ {getTotalPrice ? getTotalPrice().toFixed(2) : '0.00'}</>
               )}

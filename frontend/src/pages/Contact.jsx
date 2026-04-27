@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { api } from '../api'
 
 const Contact = () => {
+<<<<<<< HEAD
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,6 +40,27 @@ const Contact = () => {
     setSubmitting(false)
   }
 
+=======
+  const [state, setState] = useState({ submitting: false, succeeded: false, errors: [] })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const form = e.target
+    const data = {
+      name: form.name.value,
+      email: form.email.value,
+      subject: form.subject.value,
+      message: form.message.value,
+    }
+    setState({ submitting: true, succeeded: false, errors: [] })
+    const res = await api.sendContact(data)
+    if (res.error) {
+      setState({ submitting: false, succeeded: false, errors: [res.error] })
+    } else {
+      setState({ submitting: false, succeeded: true, errors: [] })
+    }
+  }
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
   const contactInfo = [
     {
       icon: (
@@ -308,6 +330,7 @@ const Contact = () => {
                 </div>
                 <div className="ct-field">
                   <label>Email</label>
+<<<<<<< HEAD
                   <input 
                     type="email" 
                     name="email" 
@@ -316,6 +339,10 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                   />
+=======
+                  <input type="email" name="email" placeholder="tu@email.com" required/>
+                  {state.errors.length > 0 && <span className="ct-err">{state.errors[0]}</span>}
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
                 </div>
               </div>
 
@@ -337,6 +364,7 @@ const Contact = () => {
 
               <div className="ct-field">
                 <label>Mensaje</label>
+<<<<<<< HEAD
                 <textarea 
                   name="message" 
                   placeholder="Escribe tu mensaje..." 
@@ -344,6 +372,9 @@ const Contact = () => {
                   onChange={handleChange}
                   required
                 />
+=======
+                <textarea name="message" placeholder="Escribe tu mensaje..." required/>
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
               </div>
 
               {error && (

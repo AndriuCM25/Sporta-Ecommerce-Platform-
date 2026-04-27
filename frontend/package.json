@@ -1,8 +1,11 @@
 {
-  "name": "app-productos",
+  "name": "sporta-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "SPORTA E-Commerce Platform - Frontend",
+  "author": "SPORTA Team",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,6 +14,10 @@
   },
   "dependencies": {
     "@formspree/react": "^3.0.0",
+<<<<<<< HEAD
+=======
+    "@react-oauth/google": "^0.13.5",
+>>>>>>> 76feaa60a71c06070f6ffd02c7f53294d15ad854
     "@supabase/supabase-js": "^2.104.1",
     "@tailwindcss/vite": "^4.2.4",
     "framer-motion": "^12.23.22",
