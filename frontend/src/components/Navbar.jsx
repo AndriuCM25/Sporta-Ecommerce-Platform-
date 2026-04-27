@@ -235,7 +235,7 @@ const Navbar = ({
         <div className="nav-inner">
           {/* Logo */}
           <div className="nav-logo" onClick={() => setCurrentPage('home')}>
-            <img src="/src/assets/Sporta_BLACK-logo.png" alt="Sporta" />
+            <img src="/Sporta_BLACK-logo.png" alt="Sporta" />
             <span className="nav-logo-text">SPORT<span>A</span></span>
           </div>
 

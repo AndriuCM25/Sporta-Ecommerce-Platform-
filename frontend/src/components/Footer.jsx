@@ -104,7 +104,7 @@ const Footer = () => {
         <div className="footer-grid">
           <div>
             <div className="footer-brand-name">
-              <img src="/src/assets/Sporta_BLACK-logo.png" alt="Sporta" />
+              <img src="/Sporta_BLACK-logo.png" alt="Sporta" />
               SPORT<span>A</span>
             </div>
             <p className="footer-tagline">
