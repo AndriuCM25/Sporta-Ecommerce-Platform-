@@ -16,13 +16,15 @@ const PORT = process.env.PORT || 3001
 // Middleware
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
   'https://sporta-tawny.vercel.app',
-  process.env.FRONTEND_URL || 'http://localhost:5173'
-]
+  process.env.FRONTEND_URL
+].filter(Boolean) // Eliminar valores undefined
 
 app.use(cors({ 
   origin: (origin, callback) => {
-    // Permitir requests sin origin (como Postman) o desde la red local
+    // Permitir requests sin origin (como Postman, apps móviles, etc.)
     if (!origin) {
       callback(null, true)
       return
@@ -34,12 +36,19 @@ app.use(cors({
       return
     }
     
-    // Permitir cualquier IP local (192.168.x.x, 10.x.x.x, etc.)
-    if (origin.match(/^http:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost)/)) {
+    // Permitir cualquier IP local (192.168.x.x, 10.x.x.x, localhost, etc.)
+    if (origin.match(/^http:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost|127\.0\.0\.1)/)) {
       callback(null, true)
       return
     }
     
+    // Permitir dominios de Vercel (para preview deployments)
+    if (origin.match(/\.vercel\.app$/)) {
+      callback(null, true)
+      return
+    }
+    
+    console.warn('⚠️ CORS bloqueado para origen:', origin)
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true 
