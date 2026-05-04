@@ -22,11 +22,25 @@ const allowedOrigins = [
 
 app.use(cors({ 
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Permitir requests sin origin (como Postman) o desde la red local
+    if (!origin) {
       callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
+      return
     }
+    
+    // Permitir orígenes específicos
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true)
+      return
+    }
+    
+    // Permitir cualquier IP local (192.168.x.x, 10.x.x.x, etc.)
+    if (origin.match(/^http:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|localhost)/)) {
+      callback(null, true)
+      return
+    }
+    
+    callback(new Error('Not allowed by CORS'))
   },
   credentials: true 
 }))
@@ -66,6 +80,53 @@ app.get('/api/health', (_, res) => res.json({
   ]
 }))
 
+// Test email endpoint
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const { sendOrderConfirmationEmail } = await import('./services/emailService.js')
+    
+    const testData = {
+      receiptNumber: 'TEST-' + Date.now(),
+      orderId: 999,
+      name: 'Cliente Prueba',
+      email: req.query.email || 'valentinocuen123@gmail.com',
+      phone: '+51 999 888 777',
+      address: 'Av. Test 123',
+      district: 'Miraflores',
+      reference: 'Frente al parque',
+      deliveryNotes: 'Timbre azul',
+      paymentMethod: 'credit',
+      items: [
+        {
+          name: 'Zapatilla Test',
+          price: 100,
+          quantity: 1,
+          selectedSize: '42',
+          selectedColor: 'Negro'
+        }
+      ],
+      subtotal: 100,
+      shipping: 0,
+      total: 100,
+      orderDate: new Date().toLocaleString('es-PE')
+    }
+    
+    console.log('🧪 Enviando email de prueba a:', testData.email)
+    const result = await sendOrderConfirmationEmail(testData)
+    
+    res.json({
+      success: result.success,
+      provider: result.provider,
+      messageId: result.messageId,
+      error: result.error,
+      testEmail: testData.email
+    })
+  } catch (error) {
+    console.error('Error en test-email:', error)
+    res.status(500).json({ error: error.message, stack: error.stack })
+  }
+})
+
 // Root endpoint
 app.get('/', (_, res) => res.json({ 
   message: 'Sporta API - E-Commerce Backend',
@@ -94,18 +155,36 @@ app.use((err, req, res, _next) => {
 console.log('Iniciando Sporta API...')
 console.log('Verificando conexión a Supabase...')
 
+// Obtener la IP local
+import os from 'os'
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces()
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address
+      }
+    }
+  }
+  return 'localhost'
+}
+
 initDb()
   .then(() => {
     console.log('Conexión a Supabase exitosa')
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
+      const localIP = getLocalIP()
       console.log('')
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       console.log('SPORTA API CORRIENDO')
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-      console.log(`URL: http://localhost:${PORT}`)
-      console.log(`Health: http://localhost:${PORT}/api/health`)
-      console.log(`CORS: http://localhost:5173`)
+      console.log(`Local:   http://localhost:${PORT}`)
+      console.log(`Network: http://${localIP}:${PORT}`)
+      console.log(`Health:  http://${localIP}:${PORT}/api/health`)
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log('')
+      console.log('Comparte esta URL con tus amigos en la misma red:')
+      console.log(`👉 http://${localIP}:${PORT}`)
       console.log('')
     })
   })

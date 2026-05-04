@@ -47,9 +47,12 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
 
   const handleGoogleResponse = async (response) => {
     setGoogleLoading(true)
+    console.log('🔄 Procesando respuesta de Google...')
+    
     try {
       // Decodificar el JWT de Google para obtener la info del usuario
       const payload = JSON.parse(atob(response.credential.split('.')[1]))
+      console.log('✅ Token de Google decodificado:', { email: payload.email, name: payload.name })
       
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
@@ -58,8 +61,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
         ? `${API_URL}/api/auth/google`           // LOGIN: solo usuarios existentes
         : `${API_URL}/api/auth/google/register`  // REGISTRO: crea usuarios nuevos
       
+      console.log(`📡 Enviando a backend: ${endpoint}`)
+      
       // Enviar al backend para validar y registrar/login
-      const result = await fetch(endpoint, {
+      const fetchResponse = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,7 +73,10 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
           googleId: payload.sub,
           picture: payload.picture,
         })
-      }).then(r => r.json())
+      })
+
+      const result = await fetchResponse.json()
+      console.log('📥 Respuesta del backend:', result)
 
       if (result.error) {
         console.error('❌ Error del servidor:', result.error)
@@ -87,12 +95,13 @@ const Auth = ({ onClose, onLogin, onRegister }) => {
         onLogin(result.user)
         setFormData({ name: '', email: '', password: '', confirmPassword: '' })
       } else {
+        console.error('❌ Respuesta incompleta del servidor:', result)
         setErrors({ google: 'Error al procesar la autenticación' })
       }
       
     } catch (err) {
       console.error('❌ Error procesando login de Google:', err)
-      setErrors({ google: 'Error al iniciar sesión con Google. Intenta de nuevo.' })
+      setErrors({ google: `Error: ${err.message}. Verifica que el backend esté corriendo.` })
     } finally {
       setGoogleLoading(false)
     }

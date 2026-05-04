@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { supabase } from '../db.js'
 import { authenticate } from '../middleware/auth.js'
+import { sendOrderConfirmationEmail } from '../services/emailService.js'
 
 const FORMSPREE_ORDERS = 'https://formspree.io/f/xrerjbkw'
 
@@ -76,32 +77,80 @@ router.post('/', authenticate, async (req, res) => {
     return res.status(500).json({ error: 'Error al guardar los items del pedido', detail: itemsError?.message })
   }
 
-  // Notificar via Formspree
-  try {
-    const receiptNumber = `COMP-${Date.now()}-${Math.random().toString(36).substr(2,9).toUpperCase()}`
-    await fetch(FORMSPREE_ORDERS, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: `Nuevo Pedido #${order.id} - ${receiptNumber}`,
-        _replyto: email,
-        receiptNumber, orderId: order.id,
-        name, email, phone,
-        address: `${address}, ${district}`,
-        reference: reference || '-',
-        paymentMethod: payment_method,
-        items: items.map(i => `${i.name} x${i.quantity} = S/ ${(i.price * i.quantity).toFixed(2)}`).join(' | '),
-        subtotal: `S/ ${subtotal.toFixed(2)}`,
-        shipping: shipping === 0 ? 'Gratis' : `S/ ${shipping.toFixed(2)}`,
-        total: `S/ ${total.toFixed(2)}`,
-        orderDate: new Date().toLocaleString('es-PE'),
-      }),
+  // Generar número de comprobante
+  const receiptNumber = `COMP-${Date.now()}-${Math.random().toString(36).substr(2,9).toUpperCase()}`
+
+  // Preparar datos para el email
+  const emailData = {
+    receiptNumber,
+    orderId: order.id,
+    name,
+    email,
+    phone,
+    address,
+    district,
+    reference: reference || '',
+    deliveryNotes: delivery_notes || '',
+    paymentMethod: payment_method,
+    items: items.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      selectedSize: item.selectedSize || '',
+      selectedColor: item.selectedColor || ''
+    })),
+    subtotal,
+    shipping,
+    total,
+    orderDate: new Date().toLocaleString('es-PE', { 
+      dateStyle: 'full', 
+      timeStyle: 'short' 
     })
-  } catch (err) {
-    console.error('Formspree orders error:', err.message)
   }
 
-  res.status(201).json({ order: { ...order, items: insertedItems } })
+  // Enviar email con Gmail/Resend (principal)
+  console.log('📧 Enviando email de confirmación...')
+  const emailResult = await sendOrderConfirmationEmail(emailData)
+  
+  if (emailResult.success) {
+    console.log(`✅ Email enviado exitosamente con ${emailResult.provider || 'email service'}`)
+  } else {
+    console.warn('⚠️ Email principal falló, intentando con Formspree como respaldo...')
+    
+    // Respaldo con Formspree si Resend falla
+    try {
+      await fetch(FORMSPREE_ORDERS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: `Nuevo Pedido #${order.id} - ${receiptNumber}`,
+          _replyto: email,
+          receiptNumber,
+          orderId: order.id,
+          name,
+          email,
+          phone,
+          address: `${address}, ${district}`,
+          reference: reference || '-',
+          paymentMethod: payment_method,
+          items: items.map(i => `${i.name} x${i.quantity} = S/ ${(i.price * i.quantity).toFixed(2)}`).join(' | '),
+          subtotal: `S/ ${subtotal.toFixed(2)}`,
+          shipping: shipping === 0 ? 'Gratis' : `S/ ${shipping.toFixed(2)}`,
+          total: `S/ ${total.toFixed(2)}`,
+          orderDate: emailData.orderDate,
+        }),
+      })
+      console.log('✅ Notificación enviada con Formspree (respaldo)')
+    } catch (formspreeErr) {
+      console.error('❌ Formspree también falló:', formspreeErr.message)
+    }
+  }
+
+  res.status(201).json({ 
+    order: { ...order, items: insertedItems },
+    emailSent: emailResult.success,
+    receiptNumber
+  })
 })
 
 // GET /api/orders
