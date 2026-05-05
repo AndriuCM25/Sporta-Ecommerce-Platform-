@@ -109,13 +109,13 @@ router.post('/', authenticate, async (req, res) => {
   }
 
   // Enviar email con Gmail/Resend (principal)
-  console.log('📧 Enviando email de confirmación...')
+  console.log('Enviando email de confirmación...')
   const emailResult = await sendOrderConfirmationEmail(emailData)
   
   if (emailResult.success) {
-    console.log(`✅ Email enviado exitosamente con ${emailResult.provider || 'email service'}`)
+    console.log(`Email enviado exitosamente con ${emailResult.provider || 'email service'}`)
   } else {
-    console.warn('⚠️ Email principal falló, intentando con Formspree como respaldo...')
+    console.warn('Email principal falló, intentando con Formspree como respaldo...')
     
     // Respaldo con Formspree si Resend falla
     try {
@@ -140,9 +140,9 @@ router.post('/', authenticate, async (req, res) => {
           orderDate: emailData.orderDate,
         }),
       })
-      console.log('✅ Notificación enviada con Formspree (respaldo)')
+      console.log('Notificación enviada con Formspree (respaldo)')
     } catch (formspreeErr) {
-      console.error('❌ Formspree también falló:', formspreeErr.message)
+      console.error('Formspree también falló:', formspreeErr.message)
     }
   }
 
