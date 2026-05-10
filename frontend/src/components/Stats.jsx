@@ -1,9 +1,11 @@
+import { Footprints, Trophy, Globe, Calendar } from 'lucide-react'
+
 const Stats = () => {
   const stats = [
-    { value: '50+', label: 'Modelos Disponibles', icon: '👟' },
-    { value: '100K+', label: 'Atletas Satisfechos', icon: '🏆' },
-    { value: '70+', label: 'Países', icon: '🌎' },
-    { value: '2019', label: 'Fundada en', icon: '📅' },
+    { value: '50+', label: 'Modelos Disponibles', icon: <Footprints size={28} color="#FF4500" /> },
+    { value: '100K+', label: 'Atletas Satisfechos', icon: <Trophy size={28} color="#FF4500" /> },
+    { value: '70+', label: 'Países', icon: <Globe size={28} color="#FF4500" /> },
+    { value: '2019', label: 'Fundada en', icon: <Calendar size={28} color="#FF4500" /> },
   ]
 
   return (

@@ -59,15 +59,15 @@ const WhatsAppButton = () => {
 
         .whatsapp-float {
           position: fixed;
-          bottom: 30px;
-          right: 30px;
-          z-index: 9998;
+          bottom: 100px;
+          right: 20px;
+          z-index: 9997;
           animation: slideIn 0.5s ease-out, float 3s ease-in-out infinite;
         }
 
         .whatsapp-button {
-          width: 60px;
-          height: 60px;
+          width: 56px;
+          height: 56px;
           border-radius: 50%;
           background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
           display: flex;

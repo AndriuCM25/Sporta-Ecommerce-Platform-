@@ -1,6 +1,6 @@
 # 🏃‍♂️ SPORTA E-Commerce Platform
 
-Plataforma de e-commerce moderna y completa para venta de zapatillas deportivas, desarrollada con React, Node.js y Supabase. Incluye sistema de autenticación, carrito persistente, múltiples métodos de pago, panel de administración avanzado y **botón flotante de WhatsApp**.
+Plataforma de e-commerce moderna y completa para venta de zapatillas deportivas, desarrollada con React, Node.js y Supabase. Incluye sistema de autenticación, carrito persistente, múltiples métodos de pago, panel de administración avanzado, **sistema de seguimiento automático**, **ofertas flash estilo Temu/Shein**, **newsletter con ofertas por email**, **footer funcional con páginas de información** y **botón flotante de WhatsApp**.
 
 ---
 
@@ -33,12 +33,65 @@ Plataforma de e-commerce moderna y completa para venta de zapatillas deportivas,
   - Transferencia bancaria
   - Pago contra entrega
 - 📦 **Sistema de checkout completo** con validación de formularios
+- 🚚 **Dos modalidades de entrega**:
+  - **Delivery a domicilio**: Entrega en 2-3 días hábiles
+  - **Recojo en tienda**: Listo en 24-48 horas
 - 📍 **Gestión de direcciones** con 43 distritos de Lima
-- 📧 **Email automático con comprobante** al completar compra (Resend)
+- 📧 **Email automático con comprobante** al completar compra (Gmail/Resend)
 - 📄 **Descarga de comprobantes** en formato TXT
-- 💬 **WhatsApp flotante** con dos opciones (Ventas y Consultas)
+- 🎯 **Sistema de seguimiento automático** (NUEVO):
+  - Avance automático cada 5 segundos por 4 etapas
+  - Timeline visual con iconos profesionales animados
+  - Barra de progreso con gradiente
+  - Estados diferenciados por tipo de entrega (Delivery/Recojo)
+  - Animación de confeti al completar
+  - Modal con factura completa al finalizar
+  - Responsive (horizontal/vertical)
+- ⚡ **Ofertas Flash estilo Temu/Shein** (NUEVO):
+  - Banner animado con gradiente en movimiento
+  - Contador regresivo en tiempo real (HH:MM:SS)
+  - Sparkles flotantes y animaciones llamativas
+  - Tarjetas de productos con badges pulsantes
+  - Barra de progreso de ventas
+  - Descuentos de hasta 50% OFF
+  - Página dedicada con filtros y ordenamiento
+- 📧 **Newsletter con ofertas exclusivas** (NUEVO):
+  - Formulario de suscripción en footer
+  - Envío automático de email con 4 ofertas
+  - Diseño profesional y responsive
+  - Integrado con Gmail/Resend
+- 📄 **Páginas de información completas** (NUEVO):
+  - Envíos y Entregas (métodos, costos, tiempos)
+  - Devoluciones y Cambios (política de 30 días)
+  - Guía de Tallas (tablas para hombre y mujer)
+  - Preguntas Frecuentes (25 preguntas en 6 categorías)
+- 🦶 **Footer funcional** (NUEVO):
+  - Navegación real a todas las páginas
+  - Redes sociales activas con hover effects
+  - Newsletter integrado
+  - Información de contacto clickeable
+  - Métodos de pago visuales
+  - 6 marcas afiliadas (Nike, Adidas, Jordan, Puma, New Balance, Converse)
+- 💬 **WhatsApp en página de Contacto**:
+  - Diseño destacado con gradiente verde
+  - Dos botones directos (Ventas: +51 987 145 336, Consultas: +51 960 056 600)
+  - Enlaces directos a WhatsApp Web con mensajes pre-escritos
+  - Horario de atención visible
+  - Números de teléfono clickeables
+  - **Nota**: No hay botón flotante de WhatsApp, solo en la página de Contacto
+- 🤖 **Asistente Virtual con IA**:
+  - **Modo Cliente**: Ayuda con compras, pagos, envíos, seguimiento, devoluciones, tallas, ofertas
+  - **Modo Admin**: Manual interactivo del dashboard, productos, pedidos, reportes, gráficos
+  - Respuestas instantáneas basadas en keywords (20+ categorías)
+  - Sugerencias rápidas contextuales (4 por modo)
+  - Interfaz de chat moderna con animaciones suaves
+  - **Botón flotante simple** en la esquina inferior derecha (56x56px)
+  - **Botón de cerrar (X)** en el header del chat
+  - Sin auto-open (el usuario debe hacer clic para abrir)
+  - Diseño limpio sin animaciones complejas
 - 🎨 **Diseño moderno y responsivo** con animaciones suaves
 - 🚚 **Envío gratis** en compras mayores a S/150
+- 🎨 **Iconos profesionales** (Lucide React) en lugar de emojis
 
 ### Para Administradores
 - 📊 **Dashboard completo** con estadísticas en tiempo real
@@ -294,10 +347,11 @@ Sporta-Ecommerce-Platform-/
 │   │   │   ├── cart.js          # Carrito de compras
 │   │   │   ├── contact.js       # Formulario de contacto
 │   │   │   ├── googleAuth.js    # Autenticación con Google
+│   │   │   ├── newsletter.js    # Newsletter con ofertas (NUEVO)
 │   │   │   ├── orders.js        # Gestión de pedidos
 │   │   │   └── products.js      # Catálogo de productos
 │   │   ├── services/
-│   │   │   └── emailService.js  # Servicio de envío de emails (Resend)
+│   │   │   └── emailService.js  # Servicio de envío de emails (Gmail/Resend)
 │   │   ├── db.js                # Conexión a Supabase
 │   │   └── index.js             # Servidor Express
 │   ├── .env                     # Variables de entorno
@@ -306,12 +360,15 @@ Sporta-Ecommerce-Platform-/
 │   ├── package.json             # Dependencias del backend
 │   ├── start.bat                # Script de inicio (Windows)
 │   ├── restart.bat              # Script de reinicio (Windows)
+│   ├── GMAIL_SETUP.md           # Guía de configuración de Gmail (NUEVO)
 │   ├── RESEND_SETUP.md          # Guía de configuración de Resend
 │   └── supabase_setup_complete.sql  # Setup completo de BD
 │
 ├── frontend/
 │   ├── public/
 │   │   ├── sporta.svg           # Logo
+│   │   ├── shoe1-6.jpg          # Imágenes de productos
+│   │   ├── modelo1-5.png        # Imágenes de modelos
 │   │   └── SportaVideoPublicitario.mp4
 │   ├── src/
 │   │   ├── assets/              # Imágenes de productos
@@ -319,24 +376,38 @@ Sporta-Ecommerce-Platform-/
 │   │   │   ├── shoe1-6.jpg      # Imágenes de zapatillas
 │   │   │   └── Sporta_BLACK-logo.png
 │   │   ├── components/
-│   │   │   ├── AdminDashboard.jsx   # Panel de administración
-│   │   │   ├── Auth.jsx             # Modal de login/registro
-│   │   │   ├── Cart.jsx             # Carrito lateral
-│   │   │   ├── Footer.jsx           # Pie de página
-│   │   │   ├── Hero.jsx             # Banner principal
-│   │   │   ├── Navbar.jsx           # Barra de navegación
-│   │   │   ├── ProductCard.jsx      # Tarjeta de producto
-│   │   │   ├── Stats.jsx            # Estadísticas
-│   │   │   └── WhatsAppButton.jsx   # Botón flotante de WhatsApp
+│   │   │   ├── AdminDashboard.jsx       # Panel de administración (ACTUALIZADO)
+│   │   │   ├── AIAssistant.jsx          # Asistente Virtual con IA (NUEVO)
+│   │   │   ├── Auth.jsx                 # Modal de login/registro
+│   │   │   ├── BrandPartners.jsx        # Marcas afiliadas (NUEVO)
+│   │   │   ├── Cart.jsx                 # Carrito lateral
+│   │   │   ├── ConfettiAnimation.jsx    # Animación de confeti (NUEVO)
+│   │   │   ├── DealProductCard.jsx      # Tarjeta de oferta (NUEVO)
+│   │   │   ├── DeliveryTypeSelector.jsx # Selector delivery/recojo (NUEVO)
+│   │   │   ├── FlashSaleBanner.jsx      # Banner de ofertas (NUEVO)
+│   │   │   ├── Footer.jsx               # Pie de página funcional (ACTUALIZADO)
+│   │   │   ├── Hero.jsx                 # Banner principal
+│   │   │   ├── InvoicePreview.jsx       # Vista de factura (NUEVO)
+│   │   │   ├── Navbar.jsx               # Barra de navegación
+│   │   │   ├── OrderTracking.jsx        # Seguimiento de pedidos (NUEVO)
+│   │   │   ├── ProductCard.jsx          # Tarjeta de producto
+│   │   │   ├── Stats.jsx                # Estadísticas (ACTUALIZADO)
+│   │   │   └── WhatsAppButton.jsx       # Botón flotante de WhatsApp (NO USADO)
 │   │   ├── pages/
 │   │   │   ├── About.jsx            # Página Nosotros
-│   │   │   ├── Checkout.jsx         # Proceso de pago
+│   │   │   ├── Checkout.jsx         # Proceso de pago (ACTUALIZADO)
 │   │   │   ├── Contact.jsx          # Formulario de contacto
+│   │   │   ├── FAQ.jsx              # Preguntas frecuentes (NUEVO)
+│   │   │   ├── FlashDeals.jsx       # Página de ofertas (NUEVO)
 │   │   │   ├── Home.jsx             # Página principal
+│   │   │   ├── OrderTrackingPage.jsx # Página de seguimiento (NUEVO)
 │   │   │   ├── ProductDetail.jsx    # Detalle de producto
-│   │   │   └── Products.jsx         # Catálogo
+│   │   │   ├── Products.jsx         # Catálogo
+│   │   │   ├── ReturnsInfo.jsx      # Información de devoluciones (NUEVO)
+│   │   │   ├── ShippingInfo.jsx     # Información de envíos (NUEVO)
+│   │   │   └── SizeGuide.jsx        # Guía de tallas (NUEVO)
 │   │   ├── api.js               # Cliente API
-│   │   ├── App.jsx              # Componente principal
+│   │   ├── App.jsx              # Componente principal (ACTUALIZADO)
 │   │   ├── App.css              # Estilos globales
 │   │   ├── index.css            # Estilos base
 │   │   └── main.jsx             # Punto de entrada
@@ -347,8 +418,26 @@ Sporta-Ecommerce-Platform-/
 │   ├── package.json             # Dependencias del frontend
 │   ├── vite.config.js           # Configuración de Vite
 │   ├── GOOGLE_OAUTH_SETUP.md    # Guía de configuración OAuth
+│   ├── VERCEL_DEPLOYMENT.md     # Guía de despliegue en Vercel (NUEVO)
 │   └── README.md                # Documentación del frontend
 │
+├── DEPLOYMENT.md                # Guía completa de despliegue
+├── DEPLOY_RAPIDO.md             # Despliegue rápido en 15 minutos
+├── ASISTENTE_VIRTUAL_IA.md      # Documentación del Asistente IA (NUEVO)
+├── GUIA_RAPIDA_ASISTENTE.md     # Guía rápida del Asistente IA (NUEVO)
+├── MEJORAS_ASISTENTE_IA.md      # Historial de mejoras del asistente (NUEVO)
+├── SOLUCION_ERRORES_ASISTENTE.md # Solución de errores del asistente (NUEVO)
+├── ASISTENTE_BIENVENIDA_AUTOMATICA.md # Sistema de bienvenida (revertido) (NUEVO)
+├── BOTONES_FLOTANTES_ORGANIZADOS.md # Organización de botones (NUEVO)
+├── FOOTER_FUNCIONAL.md          # Documentación del footer (NUEVO)
+├── INTEGRACION_OFERTAS_MARCAS.md # Documentación de ofertas y marcas (NUEVO)
+├── SISTEMA_EMAILS.md            # Documentación del sistema de emails
+├── SISTEMA_NEWSLETTER.md        # Documentación del newsletter (NUEVO)
+├── SISTEMA_OFERTAS_FLASH.md     # Documentación de ofertas flash (NUEVO)
+├── SISTEMA_SEGUIMIENTO_PEDIDOS.md # Documentación de seguimiento (NUEVO)
+├── SOLUCION_CORS.md             # Solución de problemas CORS
+├── TRACKING_AUTOMATICO.md       # Documentación de tracking automático (NUEVO)
+├── vercel.json                  # Configuración de Vercel (NUEVO)
 └── README.md                    # Este archivo (documentación principal)
 ```
 
@@ -430,6 +519,9 @@ Direcciones guardadas (opcional, no implementado aún)
 - `GET /` - Listar pedidos del usuario
 - `GET /:id` - Obtener pedido específico
 
+### Newsletter (`/api/newsletter`) 🆕
+- `POST /` - Suscribirse al newsletter (envía 4 ofertas por email)
+
 ### Contacto (`/api/contact`)
 - `POST /` - Enviar mensaje de contacto
 
@@ -487,6 +579,69 @@ Requiere autenticación y rol de administrador
 - Protección contra doble envío de pedidos
 - Cálculo automático de envío (gratis >S/150)
 
+### Sistema de Seguimiento Automático 🆕
+- **Avance automático cada 5 segundos** por 4 etapas
+- **Dos flujos diferenciados**:
+  - Delivery: Pedido Recibido → En Preparación → En Camino → Entregado
+  - Recojo: Pedido Recibido → En Preparación → Listo para Recoger → Entregado
+- **Animación de confeti** al completar (50 piezas cayendo)
+- **Modal con factura completa** al finalizar
+- Timeline visual con iconos profesionales
+- Barra de progreso animada
+- Diseño responsive
+
+### Sistema de Ofertas Flash 🆕
+- **Banner animado** con gradiente en movimiento
+- **Contador regresivo** en tiempo real (HH:MM:SS)
+- **Sparkles flotantes** y rayas diagonales animadas
+- **Tarjetas de productos** con:
+  - Badges de descuento pulsantes
+  - Barra de progreso de ventas
+  - Hover effects con shimmer
+  - Botones CTA animados
+- **Página dedicada** (`/ofertas`) con:
+  - Filtros por categoría
+  - Ordenamiento por precio/descuento
+  - Estadísticas de ofertas
+- Descuentos de hasta 50% OFF
+- Integrado en Home entre Stats y Products
+
+### Sistema de Newsletter 🆕
+- **Formulario de suscripción** en footer
+- **Envío automático de email** con 4 ofertas exclusivas:
+  - Nike Air Max 270 React (50% OFF)
+  - Adidas Ultraboost 21 (40% OFF)
+  - Puma RS-X³ Puzzle (50% OFF)
+  - Jordan Retro High OG (30% OFF)
+- **Email profesional** con:
+  - Banner de bienvenida
+  - Tarjetas de productos con imágenes
+  - Precios originales y con descuento
+  - Ahorro calculado
+  - Botones CTA
+  - Beneficios (envío gratis, pago seguro, calidad)
+  - Redes sociales
+- Integrado con Gmail/Resend
+- Validación de email
+- Confirmación visual con animación
+
+### Footer Funcional 🆕
+- **12 enlaces funcionales** a páginas de información
+- **4 páginas nuevas**:
+  - **Envíos y Entregas**: Métodos, costos, tiempos, zonas de cobertura
+  - **Devoluciones y Cambios**: Política de 30 días, proceso, reembolsos
+  - **Guía de Tallas**: Tablas para hombre y mujer, cómo medir
+  - **Preguntas Frecuentes**: 25 preguntas en 6 categorías con acordeón
+- **Redes sociales activas**:
+  - Facebook, Instagram, Twitter, YouTube
+  - Hover effects con colores de marca
+  - Animación de elevación
+- **Newsletter integrado** con formulario funcional
+- **Información de contacto** clickeable
+- **Métodos de pago** visuales (VISA, Mastercard, Yape)
+- **6 marcas afiliadas**: Nike, Adidas, Jordan, Puma, New Balance, Converse
+- Diseño responsive y profesional
+
 ### Panel de Administración
 - Dashboard con métricas en tiempo real:
   - Total de ventas (hoy, mes, año)
@@ -521,10 +676,18 @@ Requiere autenticación y rol de administrador
   - Gráficos de tendencias
 
 ### Características Adicionales
-- **WhatsApp flotante** con dos opciones:
-  - 🛍️ Ventas: Para consultas de productos y compras
-  - 💬 Información: Para dudas generales
-- **Animaciones suaves** con Framer Motion
+- **WhatsApp en página de Contacto** con dos opciones:
+  - 🛍️ Ventas (+51 987 145 336): Para consultas de productos y compras
+  - 💬 Consultas (+51 960 056 600): Para dudas generales
+  - **Nota**: No hay botón flotante de WhatsApp, solo en la página de Contacto
+- **Asistente Virtual con IA**:
+  - Único botón flotante en la aplicación
+  - Botón simple de 56x56px sin animaciones complejas
+  - Botón de cerrar (X) en el header del chat
+  - Sin auto-open (requiere clic del usuario)
+  - Respuestas inteligentes para clientes y administradores
+- **Iconos profesionales** (Lucide React) en toda la app
+- **Animaciones suaves** con transiciones CSS
 - **Diseño responsivo** para todos los dispositivos
 - **Optimización de imágenes** con lazy loading
 - **SEO optimizado** con meta tags
@@ -652,9 +815,17 @@ Ya está en **Supabase** (cloud)
    - Resend: Requiere dominio verificado, 3,000/mes, más profesional
 5. **Google OAuth**: Opcional, el sistema funciona con email/password
 6. **Tabla addresses**: Existe pero no está implementada (funcionalidad futura)
-7. **WhatsApp**: Configurado con dos números (Ventas e Información)
-8. **Comprobantes**: Se generan automáticamente y se envían por email
+7. **WhatsApp**: Solo en página de Contacto con dos números (Ventas: +51 987 145 336, Consultas: +51 960 056 600). **No hay botón flotante de WhatsApp**.
+8. **Asistente IA**: Botón flotante simple (56x56px) con botón de cerrar en el header. Sin auto-open ni animaciones complejas.
+9. **Comprobantes**: Se generan automáticamente y se envían por email
 9. **Seguridad**: Contraseñas hasheadas, JWT con expiración, RLS en Supabase
+10. **Tracking Automático** 🆕: Avanza cada 5 segundos, muestra confeti y factura al finalizar
+11. **Ofertas Flash** 🆕: Contador regresivo real, animaciones estilo Temu/Shein
+12. **Newsletter** 🆕: Envía 4 ofertas exclusivas automáticamente al suscribirse
+13. **Footer Funcional** 🆕: 12 enlaces a páginas de información completas
+14. **Iconos** 🆕: Toda la app usa Lucide React en lugar de emojis
+15. **Marcas Afiliadas** 🆕: 6 marcas con logos de alta calidad (Nike, Adidas, Jordan, Puma, New Balance, Converse)
+16. **Asistente IA** 🆕: Botón flotante simple con chat inteligente para clientes y administradores. Sin auto-open, requiere clic del usuario.
 
 ---
 
@@ -690,31 +861,33 @@ Para soporte o consultas sobre el proyecto:
 
 ### Configurar Números de WhatsApp
 
-Para cambiar los números de WhatsApp del botón flotante, edita `frontend/src/components/WhatsAppButton.jsx`:
+Para cambiar los números de WhatsApp en la página de Contacto, edita `frontend/src/pages/Contact.jsx`:
 
 ```javascript
-const WHATSAPP_OPTIONS = [
-  {
-    id: 1,
-    name: 'Ventas',
-    number: '51987145336',  // Cambia este número
-    message: '¡Hola! Me gustaría realizar una compra...',
-    icon: '🛍️'
-  },
-  {
-    id: 2,
-    name: 'Información / Consultas',
-    number: '51960056600',  // Cambia este número
-    message: '¡Hola! Tengo una consulta sobre Sporta.',
-    icon: '💬'
-  }
-]
+// Busca la sección de WhatsApp y actualiza los números:
+<a
+  href="https://wa.me/51987145336?text=..."  // Cambia este número (Ventas)
+  className="..."
+>
+  <Phone className="..." />
+  Ventas: +51 987 145 336
+</a>
+
+<a
+  href="https://wa.me/51960056600?text=..."  // Cambia este número (Consultas)
+  className="..."
+>
+  <MessageCircle className="..." />
+  Consultas: +51 960 056 600
+</a>
 ```
 
 **Formato del número**: Código de país + número sin espacios ni símbolos
 - Ejemplo Perú: `51987654321`
 - Ejemplo México: `525512345678`
 - Ejemplo España: `34612345678`
+
+**Nota**: El componente `WhatsAppButton.jsx` existe en el proyecto pero no se usa. WhatsApp solo está disponible en la página de Contacto.
 
 ---
 
@@ -728,14 +901,25 @@ const WHATSAPP_OPTIONS = [
 ### Despliegue
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guía completa de despliegue paso a paso
 - **[DEPLOY_RAPIDO.md](DEPLOY_RAPIDO.md)** - Despliegue rápido en 15 minutos
+- **[frontend/VERCEL_DEPLOYMENT.md](frontend/VERCEL_DEPLOYMENT.md)** - Despliegue en Vercel
 
-### Sistema
+### Sistemas y Funcionalidades 🆕
+- **[ASISTENTE_VIRTUAL_IA.md](ASISTENTE_VIRTUAL_IA.md)** - Asistente Virtual con IA (Cliente y Admin)
+- **[GUIA_RAPIDA_ASISTENTE.md](GUIA_RAPIDA_ASISTENTE.md)** - Guía rápida del Asistente IA
+- **[MEJORAS_ASISTENTE_IA.md](MEJORAS_ASISTENTE_IA.md)** - Historial de mejoras del asistente
+- **[SOLUCION_ERRORES_ASISTENTE.md](SOLUCION_ERRORES_ASISTENTE.md)** - Solución de errores del asistente
+- **[ASISTENTE_BIENVENIDA_AUTOMATICA.md](ASISTENTE_BIENVENIDA_AUTOMATICA.md)** - Sistema de bienvenida automática (revertido)
+- **[BOTONES_FLOTANTES_ORGANIZADOS.md](BOTONES_FLOTANTES_ORGANIZADOS.md)** - Organización de botones flotantes
 - **[SISTEMA_EMAILS.md](SISTEMA_EMAILS.md)** - Documentación del sistema de emails
-- **[frontend/README.md](frontend/README.md)** - Documentación del frontend
+- **[SISTEMA_NEWSLETTER.md](SISTEMA_NEWSLETTER.md)** - Sistema de newsletter con ofertas
+- **[SISTEMA_OFERTAS_FLASH.md](SISTEMA_OFERTAS_FLASH.md)** - Ofertas flash estilo Temu/Shein
+- **[SISTEMA_SEGUIMIENTO_PEDIDOS.md](SISTEMA_SEGUIMIENTO_PEDIDOS.md)** - Sistema de seguimiento
+- **[TRACKING_AUTOMATICO.md](TRACKING_AUTOMATICO.md)** - Tracking automático cada 5 segundos
+- **[FOOTER_FUNCIONAL.md](FOOTER_FUNCIONAL.md)** - Footer con páginas de información
+- **[INTEGRACION_OFERTAS_MARCAS.md](INTEGRACION_OFERTAS_MARCAS.md)** - Ofertas y marcas afiliadas
+- **[SOLUCION_CORS.md](SOLUCION_CORS.md)** - Solución de problemas CORS
 
----
-- **[backend/EMAIL_PREVIEW.md](backend/EMAIL_PREVIEW.md)** - Vista previa del diseño de emails
-- **[frontend/GOOGLE_OAUTH_SETUP.md](frontend/GOOGLE_OAUTH_SETUP.md)** - Guía para OAuth 2.0
+### Frontend
 - **[frontend/README.md](frontend/README.md)** - Documentación específica del frontend
 
 ---

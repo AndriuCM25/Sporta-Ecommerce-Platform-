@@ -412,7 +412,7 @@ const About = () => {
                 </div>
                 <div>
                   <div className="ab-location-label">Teléfono</div>
-                  <div className="ab-location-value">+51 999 888 777</div>
+                  <div className="ab-location-value">+51 925 841 052</div>
                 </div>
               </div>
               <div className="ab-location-item">
@@ -424,7 +424,7 @@ const About = () => {
                 </div>
                 <div>
                   <div className="ab-location-label">Email</div>
-                  <div className="ab-location-value">hola@sporta.pe</div>
+                  <div className="ab-location-value">adminSporta@depor.pe</div>
                 </div>
               </div>
             </div>

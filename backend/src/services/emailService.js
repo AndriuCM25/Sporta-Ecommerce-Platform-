@@ -353,3 +353,244 @@ export const testEmailConfiguration = async () => {
     return { success: false, error: error.message }
   }
 }
+
+// Generar HTML del newsletter con ofertas
+const generateNewsletterHTML = (offers) => {
+  const offersHTML = offers.map(offer => `
+    <tr>
+      <td style="padding: 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 0;">
+              <img src="${offer.image}" alt="${offer.name}" style="width: 100%; height: 250px; object-fit: cover; display: block;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px;">
+              <div style="display: inline-block; background: linear-gradient(135deg, #FF4500, #e03d00); color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+                -${offer.discount}% OFF
+              </div>
+              <p style="margin: 0 0 5px 0; color: #999; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">${offer.category}</p>
+              <h3 style="margin: 0 0 15px 0; color: #333; font-size: 20px; font-weight: bold;">${offer.name}</h3>
+              
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <span style="font-size: 28px; font-weight: bold; color: #FF4500;">S/ ${offer.discountPrice.toFixed(2)}</span>
+                <span style="font-size: 18px; color: #999; text-decoration: line-through;">S/ ${offer.originalPrice.toFixed(2)}</span>
+              </div>
+              
+              <div style="background-color: #f0fdf4; border-left: 4px solid #4ade80; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                <p style="margin: 0; color: #166534; font-size: 14px; font-weight: 600;">
+                  💰 Ahorras: S/ ${(offer.originalPrice - offer.discountPrice).toFixed(2)}
+                </p>
+              </div>
+              
+              <a href="https://sporta-tawny.vercel.app" style="display: inline-block; background: linear-gradient(135deg, #FF4500, #e03d00); color: white; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                Ver Producto
+              </a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `).join('')
+
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ofertas Exclusivas - SPORTA</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
+    <tr>
+      <td align="center">
+        <!-- Contenedor principal -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          
+          <!-- Header con gradiente -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #FF4500 0%, #e03d00 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: bold; letter-spacing: 3px;">SPORTA</h1>
+              <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 18px; font-weight: 600;">¡Bienvenido a nuestro Newsletter!</p>
+            </td>
+          </tr>
+
+          <!-- Mensaje de bienvenida -->
+          <tr>
+            <td style="padding: 40px 30px; text-align: center;">
+              <div style="display: inline-block; background-color: #4ade80; color: white; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: bold; margin-bottom: 20px;">
+                ✅ ¡Suscripción Exitosa!
+              </div>
+              <h2 style="margin: 0 0 15px 0; color: #333; font-size: 28px; font-weight: bold;">
+                🎉 Ofertas Exclusivas Para Ti
+              </h2>
+              <p style="margin: 0; color: #666; font-size: 16px; line-height: 1.6;">
+                Gracias por suscribirte a nuestro newsletter. Como agradecimiento, aquí tienes las mejores ofertas del momento con descuentos de hasta <strong style="color: #FF4500;">50% OFF</strong>.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Banner de oferta flash -->
+          <tr>
+            <td style="padding: 0 30px 30px 30px;">
+              <div style="background: linear-gradient(135deg, #FF4500 0%, #ff6a35 50%, #FF4500 100%); padding: 20px; border-radius: 12px; text-align: center;">
+                <p style="margin: 0 0 5px 0; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">
+                  ⚡ Oferta Relámpago
+                </p>
+                <h3 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold; letter-spacing: 2px;">
+                  ¡HASTA 50% OFF!
+                </h3>
+                <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">
+                  En productos seleccionados · Tiempo limitado
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Ofertas -->
+          ${offersHTML}
+
+          <!-- CTA Final -->
+          <tr>
+            <td style="padding: 40px 30px; text-align: center; background-color: #f8f9fa;">
+              <h3 style="margin: 0 0 15px 0; color: #333; font-size: 24px; font-weight: bold;">
+                ¿Listo para comprar?
+              </h3>
+              <p style="margin: 0 0 20px 0; color: #666; font-size: 15px; line-height: 1.6;">
+                Visita nuestra tienda online y descubre más productos increíbles con los mejores precios.
+              </p>
+              <a href="https://sporta-tawny.vercel.app" style="display: inline-block; background: linear-gradient(135deg, #FF4500, #e03d00); color: white; text-decoration: none; padding: 15px 40px; border-radius: 10px; font-weight: bold; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(255,69,0,0.3);">
+                Ir a la Tienda
+              </a>
+            </td>
+          </tr>
+
+          <!-- Beneficios -->
+          <tr>
+            <td style="padding: 30px;">
+              <h3 style="margin: 0 0 20px 0; color: #333; font-size: 20px; font-weight: bold; text-align: center;">
+                ¿Por qué comprar en SPORTA?
+              </h3>
+              <table width="100%" cellpadding="15" cellspacing="0">
+                <tr>
+                  <td width="33%" style="text-align: center; vertical-align: top;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">🚚</div>
+                    <h4 style="margin: 0 0 5px 0; color: #333; font-size: 14px; font-weight: bold;">Envío Gratis</h4>
+                    <p style="margin: 0; color: #666; font-size: 12px;">En compras mayores a S/ 150</p>
+                  </td>
+                  <td width="33%" style="text-align: center; vertical-align: top;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">🔒</div>
+                    <h4 style="margin: 0 0 5px 0; color: #333; font-size: 14px; font-weight: bold;">Pago Seguro</h4>
+                    <p style="margin: 0; color: #666; font-size: 12px;">Múltiples métodos de pago</p>
+                  </td>
+                  <td width="33%" style="text-align: center; vertical-align: top;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">✨</div>
+                    <h4 style="margin: 0 0 5px 0; color: #333; font-size: 14px; font-weight: bold;">Calidad Premium</h4>
+                    <p style="margin: 0; color: #666; font-size: 12px;">Productos originales garantizados</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Redes sociales -->
+          <tr>
+            <td style="padding: 30px; text-align: center; background-color: #f8f9fa;">
+              <p style="margin: 0 0 15px 0; color: #666; font-size: 14px; font-weight: 600;">
+                Síguenos en nuestras redes sociales
+              </p>
+              <div style="display: inline-block;">
+                <a href="https://facebook.com/sporta" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+                  <div style="width: 40px; height: 40px; background-color: #1877F2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">f</div>
+                </a>
+                <a href="https://instagram.com/sporta" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+                  <div style="width: 40px; height: 40px; background: linear-gradient(45deg, #F58529, #DD2A7B, #8134AF); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">📷</div>
+                </a>
+                <a href="https://twitter.com/sporta" style="display: inline-block; margin: 0 8px; text-decoration: none;">
+                  <div style="width: 40px; height: 40px; background-color: #1DA1F2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: bold;">🐦</div>
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px; text-align: center; background-color: #333; color: #fff;">
+              <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: bold; letter-spacing: 2px;">SPORTA</p>
+              <p style="margin: 0 0 5px 0; font-size: 13px; color: #ccc;">
+                📧 adminSporta@depor.pe | 📱 +51 925 841 052
+              </p>
+              <p style="margin: 10px 0 0 0; font-size: 12px; color: #999;">
+                © ${new Date().getFullYear()} SPORTA. Todos los derechos reservados.
+              </p>
+              <p style="margin: 15px 0 0 0; font-size: 11px; color: #777;">
+                Recibiste este email porque te suscribiste a nuestro newsletter.<br>
+                <a href="#" style="color: #FF4500; text-decoration: none;">Cancelar suscripción</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `
+}
+
+// Enviar email de newsletter con ofertas
+export const sendNewsletterEmail = async (email, offers) => {
+  try {
+    // Intentar primero con Gmail si está configurado
+    const gmailTransporter = createGmailTransporter()
+    
+    if (gmailTransporter) {
+      console.log('📧 Enviando newsletter con Gmail a:', email)
+      
+      try {
+        const info = await gmailTransporter.sendMail({
+          from: process.env.GMAIL_FROM || `"SPORTA Newsletter" <${process.env.GMAIL_USER}>`,
+          to: email,
+          subject: '🎉 ¡Bienvenido a SPORTA! Ofertas Exclusivas hasta 50% OFF',
+          html: generateNewsletterHTML(offers)
+        })
+        
+        console.log('✅ Newsletter enviado exitosamente con Gmail. ID:', info.messageId)
+        return { success: true, messageId: info.messageId, provider: 'gmail' }
+      } catch (gmailError) {
+        console.warn('⚠️ Gmail falló:', gmailError.message)
+        // Continuar con Resend si Gmail falla
+      }
+    }
+    
+    // Si Gmail no está configurado o falló, intentar con Resend
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ Ni Gmail ni Resend están configurados. Newsletter no enviado.')
+      return { success: false, error: 'No email service configured' }
+    }
+
+    console.log('📧 Enviando newsletter con Resend a:', email)
+
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'SPORTA Newsletter <onboarding@resend.dev>',
+      to: email,
+      subject: '🎉 ¡Bienvenido a SPORTA! Ofertas Exclusivas hasta 50% OFF',
+      html: generateNewsletterHTML(offers)
+    })
+
+    if (error) {
+      console.error('❌ Error enviando newsletter con Resend:', error)
+      return { success: false, error: error.message, provider: 'resend' }
+    }
+
+    console.log('✅ Newsletter enviado exitosamente con Resend. ID:', data.id)
+    return { success: true, messageId: data.id, provider: 'resend' }
+
+  } catch (error) {
+    console.error('❌ Error en sendNewsletterEmail:', error.message)
+    return { success: false, error: error.message }
+  }
+}

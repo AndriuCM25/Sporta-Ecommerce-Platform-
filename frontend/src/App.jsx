@@ -7,12 +7,18 @@ import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import ShippingInfo from './pages/ShippingInfo'
+import ReturnsInfo from './pages/ReturnsInfo'
+import SizeGuide from './pages/SizeGuide'
+import FAQ from './pages/FAQ'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
 import Auth from './components/Auth'
 import Checkout from './pages/Checkout'
 import AdminDashboard from './components/AdminDashboard'
-import WhatsAppButton from './components/WhatsAppButton'
+import AIAssistant from './components/AIAssistant'
+import FlashSaleBanner from './components/FlashSaleBanner'
+import DealProductCard from './components/DealProductCard'
 import { api } from './api'
 
 function App() {
@@ -185,6 +191,8 @@ function App() {
           <>
             <Hero />
             <Stats />
+            {/* Sección de Ofertas Flash */}
+            <FlashDealsSection />
             <Products
               addToCart={addToCart}
               viewProductDetail={viewProductDetail}
@@ -216,11 +224,21 @@ function App() {
         return <About />
       case 'contact':
         return <Contact />
+      case 'shipping':
+        return <ShippingInfo />
+      case 'returns':
+        return <ReturnsInfo />
+      case 'sizes':
+        return <SizeGuide />
+      case 'faq':
+        return <FAQ />
       default:
         return (
           <>
             <Hero />
             <Stats />
+            {/* Sección de Ofertas Flash */}
+            <FlashDealsSection />
             <Products
               addToCart={addToCart}
               viewProductDetail={viewProductDetail}
@@ -230,6 +248,121 @@ function App() {
           </>
         )
     }
+  }
+
+  // Componente de Ofertas Flash
+  const FlashDealsSection = () => {
+    const flashSaleEndTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    
+    const dealProducts = [
+      {
+        id: 101,
+        name: 'Nike Air Max 270 React',
+        category: 'Running',
+        price: 450,
+        discountPrice: 225,
+        discount: 50,
+        image: '/shoe1.jpg',
+        stock: 100,
+        sold: 75
+      },
+      {
+        id: 102,
+        name: 'Adidas Ultraboost 21',
+        category: 'Running',
+        price: 520,
+        discountPrice: 312,
+        discount: 40,
+        image: '/shoe2.jpg',
+        stock: 80,
+        sold: 60
+      },
+      {
+        id: 103,
+        name: 'Puma RS-X³ Puzzle',
+        category: 'Lifestyle',
+        price: 380,
+        discountPrice: 190,
+        discount: 50,
+        image: '/shoe3.jpg',
+        stock: 60,
+        sold: 50
+      }
+    ]
+
+    return (
+      <>
+        <style>{`
+          .flash-deals-section {
+            background: #0a0a0a;
+            padding: 4rem 2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+          }
+          .flash-deals-container {
+            max-width: 1400px;
+            margin: 0 auto;
+          }
+          .flash-deals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+          }
+          .flash-section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin: 3rem 0 0 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+          }
+          .flash-section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            letter-spacing: 2px;
+            color: #fff;
+            margin: 0;
+          }
+          .flash-section-title span {
+            color: #FF4500;
+          }
+          @media (max-width: 768px) {
+            .flash-deals-section {
+              padding: 3rem 1.5rem;
+            }
+            .flash-deals-grid {
+              grid-template-columns: 1fr;
+              gap: 1.5rem;
+            }
+          }
+        `}</style>
+        
+        <div className="flash-deals-section">
+          <div className="flash-deals-container">
+            <FlashSaleBanner endTime={flashSaleEndTime} discount={50} />
+            
+            <div className="flash-section-header">
+              <h2 className="flash-section-title">
+                OFERTAS <span>RELÁMPAGO</span>
+              </h2>
+            </div>
+
+            <div className="flash-deals-grid">
+              {dealProducts.map(product => (
+                <DealProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={addToCart}
+                  onViewDetail={viewProductDetail}
+                  user={user}
+                  onShowAuth={() => setShowAuth(true)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (
@@ -249,7 +382,10 @@ function App() {
 
       <main>{renderPage()}</main>
 
-      {!showCheckout && <Footer />}
+      {!showCheckout && <Footer onNavigate={(page) => {
+        setCurrentPage(page)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }} />}
 
       {showCart && (
         <Cart
@@ -272,8 +408,8 @@ function App() {
         />
       )}
 
-      {/* Botón flotante de WhatsApp */}
-      <WhatsAppButton />
+      {/* Asistente Virtual con IA */}
+      <AIAssistant mode="customer" user={user} />
     </div>
   )
 }

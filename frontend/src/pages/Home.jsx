@@ -1,9 +1,51 @@
 import { useState, useEffect } from 'react'
 import { api } from '../api'
+import FlashSaleBanner from '../components/FlashSaleBanner'
+import DealProductCard from '../components/DealProductCard'
 
-const Home = ({ onNavigate, user, onShowAuth }) => {
+const Home = ({ onNavigate, user, onShowAuth, onAddToCart, onViewDetail }) => {
   const [featured, setFeatured] = useState([])
   const [loading, setLoading] = useState(true)
+
+  // Fecha de fin de la oferta flash (24 horas desde ahora)
+  const flashSaleEndTime = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+  // Productos en oferta (ejemplo - en producción vendrían de la API)
+  const dealProducts = [
+    {
+      id: 101,
+      name: 'Nike Air Max 270 React',
+      category: 'Running',
+      price: 450,
+      discountPrice: 225,
+      discount: 50,
+      image: '/shoe1.jpg',
+      stock: 100,
+      sold: 75
+    },
+    {
+      id: 102,
+      name: 'Adidas Ultraboost 21',
+      category: 'Running',
+      price: 520,
+      discountPrice: 312,
+      discount: 40,
+      image: '/shoe2.jpg',
+      stock: 80,
+      sold: 60
+    },
+    {
+      id: 103,
+      name: 'Puma RS-X³ Puzzle',
+      category: 'Lifestyle',
+      price: 380,
+      discountPrice: 190,
+      discount: 50,
+      image: '/shoe3.jpg',
+      stock: 60,
+      sold: 50
+    }
+  ]
 
   useEffect(() => {
     loadFeaturedProducts()
@@ -238,6 +280,23 @@ const Home = ({ onNavigate, user, onShowAuth }) => {
         /* ── LAUNCHES ── */
         .hm-launches-wrap { padding: 0 2rem 5rem; }
         .hm-launches-inner { max-width: 1200px; margin: 0 auto; }
+
+        /* ── FLASH DEALS SECTION ── */
+        .hm-flash-deals-wrap {
+          padding: 0 2rem 5rem;
+          background: #0a0a0a;
+        }
+        .hm-flash-deals-inner {
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+        .hm-flash-deals-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+          gap: 2rem;
+          margin-top: 2rem;
+        }
+
         .hm-section-head {
           display: flex; align-items: flex-end; justify-content: space-between;
           margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
@@ -402,6 +461,33 @@ const Home = ({ onNavigate, user, onShowAuth }) => {
               <div className="hm-stat-label">{s.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* FLASH DEALS SECTION */}
+        <div className="hm-flash-deals-wrap">
+          <div className="hm-flash-deals-inner">
+            <FlashSaleBanner endTime={flashSaleEndTime} discount={50} />
+            
+            <div className="hm-section-head" style={{ marginTop: '3rem' }}>
+              <h2>OFERTAS <span>RELÁMPAGO</span></h2>
+              <button className="hm-see-all" onClick={() => onNavigate ? onNavigate('ofertas') : null}>
+                Ver todas las ofertas →
+              </button>
+            </div>
+
+            <div className="hm-flash-deals-grid">
+              {dealProducts.map(product => (
+                <DealProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={onAddToCart}
+                  onViewDetail={onViewDetail}
+                  user={user}
+                  onShowAuth={onShowAuth}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* LAUNCHES */}

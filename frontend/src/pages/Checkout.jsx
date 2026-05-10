@@ -1,18 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   CheckCircle, ArrowLeft, CreditCard, Smartphone, Landmark, Banknote,
   ShoppingCart, Shield, Mail, FileText, User, Phone, MapPin, Clock,
-  Truck, Download, Calendar, CreditCard as CardIcon, UserCheck
+  Truck, Download, Calendar, CreditCard as CardIcon, UserCheck, DollarSign, Package as PackageIcon
 } from 'lucide-react';
+import DeliveryTypeSelector from '../components/DeliveryTypeSelector';
+import OrderTracking from '../components/OrderTracking';
+import ConfettiAnimation from '../components/ConfettiAnimation';
+import InvoicePreview from '../components/InvoicePreview';
 
 const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }) => {
   const [selectedPayment, setSelectedPayment] = useState('');
+  const [deliveryType, setDeliveryType] = useState('delivery'); // 'delivery' o 'pickup'
+  const [savedDeliveryType, setSavedDeliveryType] = useState('delivery'); // Para mostrar en success
   const [orderCompleted, setOrderCompleted] = useState(false);
+  const [trackingStage, setTrackingStage] = useState(1); // Etapa actual del tracking
+  const [showInvoice, setShowInvoice] = useState(false); // Mostrar factura al final
+  const [showConfetti, setShowConfetti] = useState(false); // Mostrar confeti
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
   const [formState, setFormState] = useState({ submitting: false, succeeded: false, error: null });
   const [orderTotal, setOrderTotal] = useState(0); // Guardar el total del pedido
+  const [savedOrderData, setSavedOrderData] = useState(null); // Guardar datos del pedido
 
   const [customerInfo, setCustomerInfo] = useState({
     name: '', email: '', phone: '', address: '', district: '', reference: '', deliveryNotes: ''
@@ -21,6 +31,27 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
 
   const cartItems = cart || [];
   const FORMSPREE_ENDPOINT = 'https://formspree.io/f/movkyjko';
+
+  // Efecto para avanzar el tracking automáticamente cada 5 segundos
+  useEffect(() => {
+    if (orderCompleted && trackingStage < 4) {
+      const timer = setTimeout(() => {
+        setTrackingStage(prev => prev + 1)
+      }, 5000) // 5 segundos
+
+      return () => clearTimeout(timer)
+    } else if (orderCompleted && trackingStage === 4) {
+      // Cuando llega a la etapa 4, mostrar confeti y factura después de 1 segundo
+      const timer = setTimeout(() => {
+        setShowConfetti(true)
+        setTimeout(() => {
+          setShowInvoice(true)
+        }, 500)
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [orderCompleted, trackingStage])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,8 +79,13 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
     if (!customerInfo.email.trim()) e.email = 'El email es requerido';
     else if (!/\S+@\S+\.\S+/.test(customerInfo.email)) e.email = 'Email inválido';
     if (!customerInfo.phone.trim()) e.phone = 'El teléfono es requerido';
-    if (!customerInfo.address.trim()) e.address = 'La dirección es requerida';
-    if (!customerInfo.district) e.district = 'Selecciona un distrito';
+    
+    // Solo validar dirección si es delivery
+    if (deliveryType === 'delivery') {
+      if (!customerInfo.address.trim()) e.address = 'La dirección es requerida';
+      if (!customerInfo.district) e.district = 'Selecciona un distrito';
+    }
+    
     if (selectedPayment === 'credit') {
       if (!cardInfo.cardNumber.replace(/\s/g, '')) e.cardNumber = 'Número de tarjeta requerido';
       else if (cardInfo.cardNumber.replace(/\s/g, '').length !== 16) e.cardNumber = 'Número de tarjeta inválido';
@@ -122,10 +158,11 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
         name: customerInfo.name,
         email: customerInfo.email,
         phone: customerInfo.phone,
-        address: customerInfo.address,
-        district: customerInfo.district,
+        address: deliveryType === 'delivery' ? customerInfo.address : 'Recojo en tienda',
+        district: deliveryType === 'delivery' ? customerInfo.district : 'Tienda SPORTA',
         reference: customerInfo.reference || '',
         delivery_notes: customerInfo.deliveryNotes || '',
+        delivery_type: deliveryType, // Agregar tipo de entrega
         payment_method: selectedPayment,
         items: cartItems.map(item => ({
           id: item.id,
@@ -169,37 +206,37 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
         'Número de Pedido': `#${result.order.id}`,
         'Comprobante': r.receiptNumber,
         'Fecha': r.receiptDate,
-        'Estado': '✅ Confirmado',
+        'Estado': 'Confirmado',
         
         // Información del cliente
-        '👤 Cliente': customerInfo.name,
-        '📧 Email': customerInfo.email,
-        '📱 Teléfono': customerInfo.phone,
-        '📍 Dirección': `${customerInfo.address}, ${customerInfo.district}`,
-        '🗺️ Referencia': customerInfo.reference || 'Sin referencia',
-        '📝 Notas de entrega': customerInfo.deliveryNotes || 'Sin notas',
+        'Cliente': customerInfo.name,
+        'Email': customerInfo.email,
+        'Teléfono': customerInfo.phone,
+        'Dirección': `${customerInfo.address}, ${customerInfo.district}`,
+        'Referencia': customerInfo.reference || 'Sin referencia',
+        'Notas de entrega': customerInfo.deliveryNotes || 'Sin notas',
         
         // Información de pago
-        '💳 Método de Pago': selectedPayment === 'credit' ? 'Tarjeta de Crédito/Débito' :
+        'Método de Pago': selectedPayment === 'credit' ? 'Tarjeta de Crédito/Débito' :
                              selectedPayment === 'yape' ? 'Yape/Plin' :
                              selectedPayment === 'transfer' ? 'Transferencia Bancaria' : 'Efectivo',
         
         // Productos
-        '🛒 Productos': cartItems.map(i => 
+        'Productos': cartItems.map(i => 
           `${i.name} x${i.quantity} = S/ ${(i.price * i.quantity).toFixed(2)}`
         ).join('\n'),
         
         // Totales
-        '💰 Subtotal': `S/ ${(getTotalPrice() - (getTotalPrice() >= 150 ? 0 : 15)).toFixed(2)}`,
-        '🚚 Envío': getTotalPrice() >= 150 ? 'GRATIS' : 'S/ 15.00',
-        '✨ TOTAL': `S/ ${getTotalPrice().toFixed(2)}`,
+        'Subtotal': `S/ ${(getTotalPrice() - (getTotalPrice() >= 150 ? 0 : 15)).toFixed(2)}`,
+        'Envío': getTotalPrice() >= 150 ? 'GRATIS' : 'S/ 15.00',
+        'TOTAL': `S/ ${getTotalPrice().toFixed(2)}`,
         
         // Información adicional
-        '📅 Fecha del pedido': new Date().toLocaleString('es-PE', { 
+        'Fecha del pedido': new Date().toLocaleString('es-PE', { 
           dateStyle: 'full', 
           timeStyle: 'short' 
         }),
-        '⏰ Tiempo estimado de entrega': '2-3 días hábiles',
+        'Tiempo estimado de entrega': '2-3 días hábiles',
       };
       
       // Enviar a Formspree en segundo plano (no esperar)
@@ -208,6 +245,28 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
       });
 
       // Mostrar confirmación inmediatamente
+      setSavedDeliveryType(deliveryType); // Guardar el tipo de entrega
+      
+      // Guardar datos del pedido para mostrar en la factura
+      const subtotal = getTotalPrice ? getTotalPrice() - (getTotalPrice() >= 150 ? 0 : 15) : 0
+      const shipping = getTotalPrice && getTotalPrice() >= 150 ? 0 : 15
+      
+      setSavedOrderData({
+        orderId: result.order.id,
+        name: customerInfo.name,
+        email: customerInfo.email,
+        phone: customerInfo.phone,
+        address: deliveryType === 'delivery' ? customerInfo.address : 'Recojo en tienda',
+        district: deliveryType === 'delivery' ? customerInfo.district : 'Tienda SPORTA',
+        deliveryType: deliveryType,
+        paymentMethod: selectedPayment,
+        items: cartItems,
+        subtotal: subtotal,
+        shipping: shipping,
+        total: currentTotal
+      })
+      
+      setTrackingStage(1) // Iniciar en etapa 1
       setOrderCompleted(true);
       if (onOrderComplete) onOrderComplete();
     } catch (error) {
@@ -291,49 +350,238 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
   // ─── SUCCESS SCREEN ────────────────────────────────────────
   if (orderCompleted || formState.succeeded) {
     const r = generateReceipt();
+    
     return (
       <>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <div style={S.root}>
-          <div style={S.successWrap}>
-            <div style={S.successBox}>
-              <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:'linear-gradient(90deg,#4ade80,transparent)' }}/>
-              <div style={S.successIcon}><CheckCircle size={64}/></div>
-              <h2 style={S.successH2}>¡PEDIDO CONFIRMADO!</h2>
+        <style>{`
+          @keyframes spin{to{transform:rotate(360deg)}}
+          
+          .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9998;
+            overflow-y: auto;
+          }
 
-              <div style={S.receiptBox}>
-                <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:'1rem', color:'rgba(255,255,255,.6)' }}>
-                  <FileText size={18}/><span style={{ fontFamily:"'Bebas Neue',sans-serif", letterSpacing:2, fontSize:'.95rem' }}>COMPROBANTE GENERADO</span>
-                </div>
-                {[['Número', r.receiptNumber],['Fecha', r.receiptDate],['Método', r.bankName],['Total', `S/ ${r.receiptAmount}`]].map(([k,v]) => (
-                  <div key={k} style={S.receiptRow}><span>{k}</span><strong style={{ color:'#fff' }}>{v}</strong></div>
-                ))}
-              </div>
+          .tracking-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
 
-              <div style={S.detailsList}>
-                {[
-                  [<User size={16}/>, customerInfo.name, 'Cliente'],
-                  [<Mail size={16}/>, customerInfo.email, 'Email'],
-                  [<Phone size={16}/>, customerInfo.phone, 'Teléfono'],
-                  [<MapPin size={16}/>, `${customerInfo.address}, ${customerInfo.district}`, 'Dirección'],
-                  [<Truck size={16}/>, '2-3 días hábiles', 'Envío'],
-                ].map(([icon, val, key]) => (
-                  <div key={key} style={S.detailItem}>{icon}<span>{val}</span></div>
-                ))}
-              </div>
+          .tracking-header-success {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease;
+          }
 
-              <p style={S.successMsg}>Tu pedido ha sido procesado. Descarga tu comprobante a continuación.</p>
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
 
-              <div style={S.successActs}>
-                <button style={S.dlBtn} onClick={downloadReceipt}><Download size={16}/>Descargar comprobante</button>
-                <button style={S.contBtn} onClick={() => {
-                  // Cerrar checkout y volver al inicio
-                  window.location.href = '/';
-                }}><ShoppingCart size={16}/>Volver a la tienda</button>
-              </div>
+          .success-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2rem, 5vw, 3rem);
+            letter-spacing: 3px;
+            color: #4ade80;
+            margin: 0 0 0.5rem 0;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+          }
+
+          .success-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+            margin: 0;
+          }
+
+          .invoice-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+          }
+
+          .invoice-modal-content {
+            position: relative;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+          }
+
+          .invoice-close-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10001;
+          }
+
+          .invoice-close-btn:hover {
+            background: rgba(255,69,0,0.2);
+            border-color: #FF4500;
+            transform: rotate(90deg);
+          }
+
+          .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+          }
+
+          .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.85rem 1.75rem;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+          }
+
+          .btn-download {
+            background: rgba(74,222,128,0.15);
+            border: 1px solid rgba(74,222,128,0.3);
+            color: #4ade80;
+          }
+
+          .btn-download:hover {
+            background: rgba(74,222,128,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74,222,128,0.2);
+          }
+
+          .btn-invoice {
+            background: rgba(255,69,0,0.15);
+            border: 1px solid rgba(255,69,0,0.3);
+            color: #FF4500;
+          }
+
+          .btn-invoice:hover {
+            background: rgba(255,69,0,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255,69,0,0.2);
+          }
+
+          .btn-home {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.7);
+          }
+
+          .btn-home:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+          }
+
+          @media (max-width: 768px) {
+            .tracking-container {
+              padding: 1rem;
+            }
+
+            .action-buttons {
+              flex-direction: column;
+            }
+
+            .action-btn {
+              width: 100%;
+              justify-content: center;
+            }
+          }
+        `}</style>
+
+        {/* Confeti Animation */}
+        {showConfetti && <ConfettiAnimation />}
+
+        {/* Success Screen */}
+        <div className="success-overlay">
+          <div className="tracking-container">
+            <div className="tracking-header-success">
+              <h1 className="success-title">
+                {trackingStage === 4 ? '¡PEDIDO ENTREGADO!' : 'PEDIDO CONFIRMADO'}
+              </h1>
+              <p className="success-subtitle">
+                {trackingStage === 4 
+                  ? 'Tu pedido ha sido procesado exitosamente' 
+                  : 'Estamos procesando tu pedido en tiempo real'}
+              </p>
             </div>
+
+            {/* Order Tracking Component */}
+            <OrderTracking 
+              deliveryType={savedDeliveryType} 
+              currentStage={trackingStage} 
+            />
+
+            {/* Action Buttons */}
+            {trackingStage === 4 && (
+              <div className="action-buttons">
+                <button className="action-btn btn-download" onClick={downloadReceipt}>
+                  <Download size={18}/>
+                  Descargar Comprobante
+                </button>
+                <button className="action-btn btn-invoice" onClick={() => setShowInvoice(true)}>
+                  <FileText size={18}/>
+                  Ver Factura Completa
+                </button>
+                <button className="action-btn btn-home" onClick={() => window.location.href = '/'}>
+                  <ShoppingCart size={18}/>
+                  Volver a la Tienda
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Invoice Modal */}
+        {showInvoice && savedOrderData && (
+          <div className="invoice-modal-overlay" onClick={() => setShowInvoice(false)}>
+            <button className="invoice-close-btn" onClick={() => setShowInvoice(false)}>
+              ✕
+            </button>
+            <div className="invoice-modal-content" onClick={(e) => e.stopPropagation()}>
+              <InvoicePreview 
+                orderData={savedOrderData}
+                receiptData={r}
+              />
+            </div>
+          </div>
+        )}
       </>
     );
   }
@@ -396,8 +644,16 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
             <div style={S.detHead}><Banknote size={20}/><h4 style={S.detTitle}>PAGO CONTRA ENTREGA</h4></div>
             <p style={{ color:'rgba(255,255,255,.45)', fontSize:'.875rem' }}>Paga en efectivo cuando recibas tu pedido.</p>
             <div style={S.cashFeats}>
-              {[['💵','Efectivo','Soles exactos'],['📦','Al recibir','Revisa antes de pagar'],['🚚','Delivery','2-3 días hábiles']].map(([e,t,s]) => (
-                <div key={t} style={S.cashFeat}><span style={{ fontSize:'1.5rem' }}>{e}</span><span style={S.cashFeatTit}>{t}</span><span style={S.cashFeatSub}>{s}</span></div>
+              {[
+                [<DollarSign size={24} color="#4ade80" />, 'Efectivo', 'Soles exactos'],
+                [<PackageIcon size={24} color="#4ade80" />, 'Al recibir', 'Revisa antes de pagar'],
+                [<Truck size={24} color="#4ade80" />, 'Delivery', '2-3 días hábiles']
+              ].map(([icon, t, s], idx) => (
+                <div key={idx} style={S.cashFeat}>
+                  <span style={{ fontSize:'1.5rem', display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>{icon}</span>
+                  <span style={S.cashFeatTit}>{t}</span>
+                  <span style={S.cashFeatSub}>{s}</span>
+                </div>
               ))}
             </div>
           </>
@@ -430,10 +686,20 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
 
         <div style={S.grid}>
 
+          {/* ── DELIVERY TYPE SELECTOR ── */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <DeliveryTypeSelector 
+              selectedType={deliveryType} 
+              onTypeChange={setDeliveryType} 
+            />
+          </div>
+
           {/* ── CUSTOMER INFO ── */}
           <div style={S.card}>
             <div style={S.cardAccent}/>
-            <div style={S.secHead}><User size={20}/><h3 style={S.secTitle}>INFORMACIÓN DE CONTACTO Y ENVÍO</h3></div>
+            <div style={S.secHead}><User size={20}/><h3 style={S.secTitle}>
+              {deliveryType === 'delivery' ? 'INFORMACIÓN DE CONTACTO Y ENVÍO' : 'INFORMACIÓN DE CONTACTO'}
+            </h3></div>
 
             <div style={S.formRow}>
               {[['name','text','Nombre completo *',<User size={14}/>,'Ingresa tu nombre completo'],['email','email','Correo electrónico *',<Mail size={14}/>,'tu@email.com']].map(([name,type,label,icon,ph]) => (
@@ -451,43 +717,63 @@ const Checkout = ({ cart, getTotalPrice, onReturnToCart, onOrderComplete, user }
                 <input type="tel" name="phone" value={customerInfo.phone} onChange={handleInputChange} placeholder="+51 999 888 777" style={{ ...S.input, ...(errors.phone ? S.inputErr : {}) }}/>
                 {errors.phone && <span style={S.errMsg}>{errors.phone}</span>}
               </div>
-              <div style={S.formGroup}>
-                <label style={S.label}><MapPin size={14}/>Distrito *</label>
-                <select name="district" value={customerInfo.district} onChange={handleInputChange} style={{ ...S.select, ...(errors.district ? S.inputErr : {}) }} className="checkout-district-select">
-                  <option value="">Selecciona tu distrito</option>
-                  {[
-                    'Ancón','Ate','Barranco','Breña','Carabayllo','Chaclacayo','Chorrillos','Cieneguilla','Comas',
-                    'El Agustino','Independencia','Jesús María','La Molina','La Victoria','Lima','Lince','Los Olivos',
-                    'Lurigancho','Lurín','Magdalena del Mar','Miraflores','Pachacámac','Pucusana','Pueblo Libre',
-                    'Puente Piedra','Punta Hermosa','Punta Negra','Rímac','San Bartolo','San Borja','San Isidro',
-                    'San Juan de Lurigancho','San Juan de Miraflores','San Luis','San Martín de Porres','San Miguel',
-                    'Santa Anita','Santa María del Mar','Santa Rosa','Santiago de Surco','Surquillo','Villa El Salvador',
-                    'Villa María del Triunfo'
-                  ].map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-                {errors.district && <span style={S.errMsg}>{errors.district}</span>}
-              </div>
-            </div>
-
-            <div style={S.formGroup}>
-              <label style={S.label}><MapPin size={14}/>Dirección completa *</label>
-              <input type="text" name="address" value={customerInfo.address} onChange={handleInputChange} placeholder="Calle, número, departamento, urbanización" style={{ ...S.input, ...(errors.address ? S.inputErr : {}) }}/>
-              {errors.address && <span style={S.errMsg}>{errors.address}</span>}
-            </div>
-
-            <div style={S.formRow}>
-              {[['reference','Referencia de la dirección','Frente al parque...'],['deliveryNotes','Indicaciones de entrega','Timbre azul, dejar con conserje']].map(([name,label,ph]) => (
-                <div key={name} style={S.formGroup}>
-                  <label style={S.label}>{label}</label>
-                  <input type="text" name={name} value={customerInfo[name]} onChange={handleInputChange} placeholder={`Ej: ${ph}`} style={S.input}/>
+              {deliveryType === 'delivery' && (
+                <div style={S.formGroup}>
+                  <label style={S.label}><MapPin size={14}/>Distrito *</label>
+                  <select name="district" value={customerInfo.district} onChange={handleInputChange} style={{ ...S.select, ...(errors.district ? S.inputErr : {}) }} className="checkout-district-select">
+                    <option value="">Selecciona tu distrito</option>
+                    {[
+                      'Ancón','Ate','Barranco','Breña','Carabayllo','Chaclacayo','Chorrillos','Cieneguilla','Comas',
+                      'El Agustino','Independencia','Jesús María','La Molina','La Victoria','Lima','Lince','Los Olivos',
+                      'Lurigancho','Lurín','Magdalena del Mar','Miraflores','Pachacámac','Pucusana','Pueblo Libre',
+                      'Puente Piedra','Punta Hermosa','Punta Negra','Rímac','San Bartolo','San Borja','San Isidro',
+                      'San Juan de Lurigancho','San Juan de Miraflores','San Luis','San Martín de Porres','San Miguel',
+                      'Santa Anita','Santa María del Mar','Santa Rosa','Santiago de Surco','Surquillo','Villa El Salvador',
+                      'Villa María del Triunfo'
+                    ].map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                  {errors.district && <span style={S.errMsg}>{errors.district}</span>}
                 </div>
-              ))}
+              )}
             </div>
 
-            <div style={S.delivInfo}>
-              <div style={S.delivItem}><Truck size={16} color="#FF4500"/><span>Envío estándar: 2-3 días hábiles</span></div>
-              <div style={S.delivItem}><Clock size={16} color="#FF4500"/><span>Horario: 9:00 AM – 7:00 PM</span></div>
-            </div>
+            {deliveryType === 'delivery' && (
+              <>
+                <div style={S.formGroup}>
+                  <label style={S.label}><MapPin size={14}/>Dirección completa *</label>
+                  <input type="text" name="address" value={customerInfo.address} onChange={handleInputChange} placeholder="Calle, número, departamento, urbanización" style={{ ...S.input, ...(errors.address ? S.inputErr : {}) }}/>
+                  {errors.address && <span style={S.errMsg}>{errors.address}</span>}
+                </div>
+
+                <div style={S.formRow}>
+                  {[['reference','Referencia de la dirección','Frente al parque...'],['deliveryNotes','Indicaciones de entrega','Timbre azul, dejar con conserje']].map(([name,label,ph]) => (
+                    <div key={name} style={S.formGroup}>
+                      <label style={S.label}>{label}</label>
+                      <input type="text" name={name} value={customerInfo[name]} onChange={handleInputChange} placeholder={`Ej: ${ph}`} style={S.input}/>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={S.delivInfo}>
+                  <div style={S.delivItem}><Truck size={16} color="#FF4500"/><span>Envío estándar: 2-3 días hábiles</span></div>
+                  <div style={S.delivItem}><Clock size={16} color="#FF4500"/><span>Horario: 9:00 AM – 7:00 PM</span></div>
+                </div>
+              </>
+            )}
+
+            {deliveryType === 'pickup' && (
+              <div style={{ ...S.delivInfo, flexDirection: 'column', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#FF4500', fontWeight: 600, fontSize: '0.9rem' }}>
+                  <MapPin size={18}/>
+                  <span>Dirección de la Tienda</span>
+                </div>
+                <div style={{ paddingLeft: '26px', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                  <p style={{ margin: '0 0 0.5rem 0' }}>Av. Principal 123, Miraflores, Lima</p>
+                  <p style={{ margin: '0 0 0.5rem 0' }}>📞 Teléfono: +51 925 841 052</p>
+                  <p style={{ margin: 0 }}>🕐 Horario: Lun-Sáb 10:00 AM - 8:00 PM</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── ORDER SUMMARY ── */}

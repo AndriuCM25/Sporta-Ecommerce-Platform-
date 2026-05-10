@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../api'
+import AIAssistant from './AIAssistant'
 
 // ─── HELPERS ────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -1189,6 +1190,9 @@ table.adm-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
           </div>
         </div>
       )}
+
+      {/* Asistente Virtual para Admin */}
+      <AIAssistant mode="admin" user={user} />
     </>
   )
 }

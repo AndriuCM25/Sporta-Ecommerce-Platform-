@@ -9,6 +9,7 @@ import orderRoutes from './routes/orders.js'
 import contactRoutes from './routes/contact.js'
 import cartRoutes from './routes/cart.js'
 import adminRoutes from './routes/admin.js'
+import newsletterRoutes from './routes/newsletter.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -62,13 +63,14 @@ app.use((req, res, next) => {
 })
 
 // Rutas
-app.use('/api/auth',     authRoutes)
-app.use('/api/auth',     googleAuthRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/orders',   orderRoutes)
-app.use('/api/contact',  contactRoutes)
-app.use('/api/cart',     cartRoutes)
-app.use('/api/admin',    adminRoutes)
+app.use('/api/auth',       authRoutes)
+app.use('/api/auth',       googleAuthRoutes)
+app.use('/api/products',   productRoutes)
+app.use('/api/orders',     orderRoutes)
+app.use('/api/contact',    contactRoutes)
+app.use('/api/cart',       cartRoutes)
+app.use('/api/admin',      adminRoutes)
+app.use('/api/newsletter', newsletterRoutes)
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ 
